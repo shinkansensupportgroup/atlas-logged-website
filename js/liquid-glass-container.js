@@ -67,6 +67,12 @@ class Container {
       let newWidth = Math.ceil(rect.width)
       let newHeight = Math.ceil(rect.height)
 
+      // Validate dimensions
+      if (newWidth <= 0 || newHeight <= 0) {
+        console.warn('Invalid dimensions during resize, skipping update')
+        return
+      }
+
       // Apply type-specific sizing logic
       if (this.type === 'circle') {
         // For circles, ensure perfect square
@@ -98,9 +104,18 @@ class Container {
 
         // Update WebGL viewport if initialized
         if (this.gl_refs.gl) {
-          this.gl_refs.gl.viewport(0, 0, newWidth, newHeight)
-          this.gl_refs.gl.uniform2f(this.gl_refs.resolutionLoc, newWidth, newHeight)
-          this.gl_refs.gl.uniform1f(this.gl_refs.borderRadiusLoc, this.borderRadius)
+          try {
+            this.gl_refs.gl.viewport(0, 0, newWidth, newHeight)
+            this.gl_refs.gl.uniform2f(this.gl_refs.resolutionLoc, newWidth, newHeight)
+            this.gl_refs.gl.uniform1f(this.gl_refs.borderRadiusLoc, this.borderRadius)
+
+            // Force a render to prevent black screen
+            if (this.render) {
+              this.render()
+            }
+          } catch (error) {
+            console.error('WebGL update error during resize:', error)
+          }
         }
 
         // Update any nested glass children when container size changes
@@ -108,14 +123,18 @@ class Container {
           if (child instanceof Button && child.isNestedGlass && child.gl_refs.gl) {
             const gl = child.gl_refs.gl
 
-            // Update child's texture to match new container size
-            gl.bindTexture(gl.TEXTURE_2D, child.gl_refs.texture)
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, newWidth, newHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+            try {
+              // Update child's texture to match new container size
+              gl.bindTexture(gl.TEXTURE_2D, child.gl_refs.texture)
+              gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, newWidth, newHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
 
-            // Update child's uniforms
-            gl.uniform2f(child.gl_refs.textureSizeLoc, newWidth, newHeight)
-            if (child.gl_refs.containerSizeLoc) {
-              gl.uniform2f(child.gl_refs.containerSizeLoc, newWidth, newHeight)
+              // Update child's uniforms
+              gl.uniform2f(child.gl_refs.textureSizeLoc, newWidth, newHeight)
+              if (child.gl_refs.containerSizeLoc) {
+                gl.uniform2f(child.gl_refs.containerSizeLoc, newWidth, newHeight)
+              }
+            } catch (error) {
+              console.error('Child update error during resize:', error)
             }
           }
         })
@@ -265,20 +284,37 @@ class Container {
   // Static method to recapture for all instances
   static recaptureAll() {
     if (Container.isCapturing) {
-      console.log('Capture already in progress')
-      return
+      console.log('Capture already in progress, skipping')
+      return Promise.resolve()
     }
 
     if (Container.instances.length === 0) {
       console.log('No containers to recapture')
-      return
+      return Promise.resolve()
     }
 
-    // Use the first instance to trigger recapture
-    const firstContainer = Container.instances[0]
+    // Validate all containers before recapturing
+    const validContainers = Container.instances.filter(c => {
+      return c.canvas && c.canvas.width > 0 && c.canvas.height > 0
+    })
+
+    if (validContainers.length === 0) {
+      console.warn('No valid containers for recapture')
+      return Promise.resolve()
+    }
+
+    // Use the first valid instance to trigger recapture
+    const firstContainer = validContainers[0]
     if (firstContainer) {
       Container.isCapturing = true
-      firstContainer.capturePageSnapshot()
+      try {
+        firstContainer.capturePageSnapshot()
+        return Promise.resolve()
+      } catch (error) {
+        console.error('Recapture failed:', error)
+        Container.isCapturing = false
+        return Promise.reject(error)
+      }
     }
   }
 
@@ -693,18 +729,35 @@ class Container {
     const render = () => {
       if (!this.gl_refs.gl) return
 
+      // Validate canvas dimensions before rendering
+      if (this.canvas.width <= 0 || this.canvas.height <= 0) {
+        console.warn('Invalid canvas dimensions, skipping render')
+        return
+      }
+
       const gl = this.gl_refs.gl
-      gl.clear(gl.COLOR_BUFFER_BIT)
 
-      // Update scroll position
-      const scrollY = window.pageYOffset || document.documentElement.scrollTop
-      gl.uniform1f(this.gl_refs.scrollYLoc, scrollY)
+      // Check for WebGL context loss
+      if (gl.isContextLost && gl.isContextLost()) {
+        console.warn('WebGL context lost, skipping render')
+        return
+      }
 
-      // Update container position (in case it moved)
-      const position = this.getPosition()
-      gl.uniform2f(this.gl_refs.containerPositionLoc, position.x, position.y)
+      try {
+        gl.clear(gl.COLOR_BUFFER_BIT)
 
-      gl.drawArrays(gl.TRIANGLES, 0, 6)
+        // Update scroll position
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop
+        gl.uniform1f(this.gl_refs.scrollYLoc, scrollY)
+
+        // Update container position (in case it moved)
+        const position = this.getPosition()
+        gl.uniform2f(this.gl_refs.containerPositionLoc, position.x, position.y)
+
+        gl.drawArrays(gl.TRIANGLES, 0, 6)
+      } catch (error) {
+        console.error('Render error:', error)
+      }
     }
 
     render()

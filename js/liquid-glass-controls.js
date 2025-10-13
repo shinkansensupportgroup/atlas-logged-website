@@ -104,36 +104,50 @@ function initLiquidGlass() {
 
         // Re-capture on window resize
         let resizeTimeout;
+        let isResizing = false;
         const handleResize = () => {
             clearTimeout(resizeTimeout);
+
+            if (!isResizing) {
+                isResizing = true;
+                console.log('Resize started...');
+            }
+
             resizeTimeout = setTimeout(() => {
-                if (!glassContainer || !liquidGlassEnabled) return;
+                if (!glassContainer || !liquidGlassEnabled) {
+                    isResizing = false;
+                    return;
+                }
 
                 console.log('Handling window resize...');
 
-                // Update nav height first
-                const nav = document.querySelector('nav');
-                if (nav) {
-                    const rect = nav.getBoundingClientRect();
-                    glassContainer.element.style.height = rect.height + 'px';
-                }
+                try {
+                    // Update nav height first
+                    const nav = document.querySelector('nav');
+                    if (nav) {
+                        const rect = nav.getBoundingClientRect();
+                        glassContainer.element.style.height = rect.height + 'px';
+                    }
 
-                // Update container dimensions
-                if (glassContainer.updateSizeFromDOM) {
-                    glassContainer.updateSizeFromDOM();
-                }
+                    // Update container dimensions and force render
+                    if (glassContainer.updateSizeFromDOM) {
+                        glassContainer.updateSizeFromDOM();
+                    }
 
-                // Force recapture of page background
-                if (typeof Container !== 'undefined' && Container.recaptureAll) {
-                    console.log('Recapturing page snapshot after resize...');
-                    Container.recaptureAll();
-                } else {
-                    // Fallback: reinitialize
-                    console.log('Reinitializing liquid glass...');
-                    disableLiquidGlass();
-                    setTimeout(() => initLiquidGlass(), 100);
+                    // Wait for canvas to stabilize before recapturing
+                    setTimeout(() => {
+                        if (typeof Container !== 'undefined' && Container.recaptureAll) {
+                            console.log('Recapturing page snapshot after resize...');
+                            Container.recaptureAll();
+                        }
+                        isResizing = false;
+                        console.log('Resize complete');
+                    }, 100);
+                } catch (error) {
+                    console.error('Resize handler error:', error);
+                    isResizing = false;
                 }
-            }, 200); // Debounce resize events
+            }, 300); // Increased debounce for stability
         };
 
         window.addEventListener('resize', handleResize);
