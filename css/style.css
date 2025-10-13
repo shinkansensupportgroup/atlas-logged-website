@@ -740,3 +740,36 @@ a,
 button {
     transition: all 0.2s ease;
 }
+
+/* Fix for blue line at top of page */
+html {
+    overflow-x: hidden;
+}
+
+body {
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Completely hide skip-to-content link when not focused */
+.skip-to-content {
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    position: absolute !important;
+}
+
+.skip-to-content:focus {
+    clip: auto;
+    clip-path: none;
+    height: auto;
+    width: auto;
+    overflow: visible;
+    white-space: normal;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 10000;
+}
