@@ -26,22 +26,16 @@ window.glassControls = { ...defaultSettings };
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     const isMobile = window.innerWidth <= 768;
-    const hasOnboarded = localStorage.getItem('atlas-liquid-glass-onboarded');
 
-    // Show onboarding popup for first-time mobile users
-    if (isMobile && !hasOnboarded) {
+    // Always show onboarding popup on mobile (every reload)
+    if (isMobile) {
         showOnboardingPopup();
     } else {
-        // Load saved enabled state for returning users or desktop
-        const saved = localStorage.getItem('atlas-liquid-glass-enabled');
-        liquidGlassEnabled = saved === null ? true : saved === 'true';
-
-        document.getElementById('enableLiquidGlass').checked = liquidGlassEnabled;
-
-        if (liquidGlassEnabled) {
-            initLiquidGlass();
-            initGlassSettingsButton();
-        }
+        // Desktop: enable liquid glass by default
+        liquidGlassEnabled = true;
+        document.getElementById('enableLiquidGlass').checked = true;
+        initLiquidGlass();
+        initGlassSettingsButton();
     }
 
     initControls();
@@ -56,24 +50,23 @@ function showOnboardingPopup() {
 
     if (!popup || !enableButton || !disableButton) {
         console.warn('Onboarding elements not found');
-        // Fallback: enable by default
-        liquidGlassEnabled = true;
-        document.getElementById('enableLiquidGlass').checked = true;
-        initLiquidGlass();
-        initGlassSettingsButton();
+        // Fallback: disable liquid glass, show regular cog
+        liquidGlassEnabled = false;
+        document.getElementById('enableLiquidGlass').checked = false;
         return;
     }
+
+    // Start with liquid glass disabled, regular cog visible
+    liquidGlassEnabled = false;
+    document.getElementById('enableLiquidGlass').checked = false;
 
     // Show popup
     popup.classList.add('show');
 
-    // Handle "Enable" button
-    enableButton.addEventListener('click', () => {
+    // Handle "Enable" button (only runs once per click)
+    const handleEnable = () => {
         liquidGlassEnabled = true;
-        localStorage.setItem('atlas-liquid-glass-enabled', 'true');
-        localStorage.setItem('atlas-liquid-glass-onboarded', 'true');
         document.getElementById('enableLiquidGlass').checked = true;
-
         popup.classList.remove('show');
 
         // Initialize after a short delay for smooth transition
@@ -81,26 +74,34 @@ function showOnboardingPopup() {
             initLiquidGlass();
             initGlassSettingsButton();
         }, 300);
-    });
+
+        // Remove listeners after first click
+        enableButton.removeEventListener('click', handleEnable);
+        disableButton.removeEventListener('click', handleDisable);
+    };
 
     // Handle "No Thanks" button
-    disableButton.addEventListener('click', () => {
+    const handleDisable = () => {
         liquidGlassEnabled = false;
-        localStorage.setItem('atlas-liquid-glass-enabled', 'false');
-        localStorage.setItem('atlas-liquid-glass-onboarded', 'true');
         document.getElementById('enableLiquidGlass').checked = false;
-
         popup.classList.remove('show');
 
-        // User chose not to enable, just show the settings cog (non-glass version)
-        console.log('%cLiquid glass disabled by user choice', 'color: #64748b;');
-    });
+        // Regular settings cog is already visible (HTML version)
+        console.log('%cLiquid glass disabled - using CSS glassmorphism', 'color: #64748b;');
+
+        // Remove listeners after first click
+        enableButton.removeEventListener('click', handleEnable);
+        disableButton.removeEventListener('click', handleDisable);
+    };
+
+    enableButton.addEventListener('click', handleEnable);
+    disableButton.addEventListener('click', handleDisable);
 
     // Close on backdrop click
     const backdrop = popup.querySelector('.onboarding-backdrop');
     backdrop?.addEventListener('click', () => {
         // Treat backdrop click as "No Thanks"
-        disableButton.click();
+        handleDisable();
     });
 }
 
@@ -363,7 +364,7 @@ function initControls() {
     // Enable/disable toggle
     enableToggle?.addEventListener('change', (e) => {
         liquidGlassEnabled = e.target.checked;
-        localStorage.setItem('atlas-liquid-glass-enabled', liquidGlassEnabled);
+        // No localStorage - fresh choice on every page load
 
         if (liquidGlassEnabled) {
             initLiquidGlass();
