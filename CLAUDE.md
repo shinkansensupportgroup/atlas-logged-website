@@ -48,15 +48,16 @@ dig www.atlaslogged.com +short
 
 ### Key Design Patterns
 
-**Glassmorphism/Liquid Glass Effects**:
-- Uses layered approach: `backdrop-filter: blur()` for blur + `filter: url(#svg-filter)` on `::before` pseudo-elements for distortion
-- **Critical**: Cannot use `backdrop-filter: ... url()` - that syntax is invalid. Must use separate layers.
-- SVG filters (index.html:75-131) use `feTurbulence` + `feDisplacementMap` to create organic refraction distortion
-- Safari detection in js/main.js:10-23 applies `.is-safari` class for progressive enhancement
-- Liquid glass effects only work in **Chromium browsers** (Chrome, Edge, Opera)
-- Safari/Firefox get standard glassmorphism fallback (blur + transparency only)
-- Desktop-only enhancement (`@media min-width: 1024px`) for performance
-- Implementation: css/style.css:78-92 (nav), 161-175 (buttons), 315-335 (features), 571-589 (footer)
+**Glassmorphism with Subtle Distortion**:
+- Primary effect: Clean `backdrop-filter: blur()` + transparency (works everywhere)
+- Optional subtle distortion: SVG filter on `::before` pseudo-elements (Chromium desktop only)
+- **Critical**: Cannot use `backdrop-filter: ... url(#svg-filter)` - that syntax is invalid
+- SVG filter (index.html:74-94) uses minimal distortion (scale: 3) for barely-noticeable organic texture
+- Safari detection in js/main.js:10-20 applies `.is-safari` class for progressive enhancement
+- Chromium (Chrome/Edge/Opera) on desktop >1024px gets subtle distortion via `filter: url(#glass-distortion)`
+- Safari/Firefox/Mobile get clean glassmorphism only
+- Distortion applied to backgrounds only, never to text/buttons for clean layout
+- Implementation: css/style.css:78-96 (nav), 288-307 (features)
 
 **Mobile-First Responsive Design**:
 - Hamburger menu system (css/style.css:586-617, js/main.js:62-91)
@@ -130,8 +131,14 @@ Site uses custom domain `atlaslogged.com` configured via:
 ### Documentation Files
 - `README.md` - Comprehensive setup and customization guide
 - `DEPLOYMENT_CHECKLIST.md` - Deployment verification checklist
-- `LIQUID_GLASS_IMPLEMENTATION.md` - Complete technical guide to liquid glass effect implementation
+- `LIQUID_GLASS_IMPLEMENTATION.md` - (Outdated) Previous attempt at complex liquid glass - see CLAUDE.md for current approach
 - `deploy.sh` - Legacy manual deployment script (not used; GitHub Actions handles deployment)
+
+### Design Philosophy
+- **Prioritize working UX over extreme visual effects**
+- Clean, professional glassmorphism that works cross-browser
+- Subtle progressive enhancement for modern browsers
+- Never sacrifice layout/readability for visual effects
 
 ## Browser Support
 - Chrome/Edge: Latest 2 versions
