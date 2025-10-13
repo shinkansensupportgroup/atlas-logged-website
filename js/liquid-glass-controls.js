@@ -47,18 +47,23 @@ function showOnboardingPopup() {
     const popup = document.getElementById('liquid-glass-onboarding');
     const enableButton = document.getElementById('onboarding-enable');
     const disableButton = document.getElementById('onboarding-disable');
+    const settingsCog = document.getElementById('settings-cog');
 
     if (!popup || !enableButton || !disableButton) {
         console.warn('Onboarding elements not found');
         // Fallback: disable liquid glass, show regular cog
         liquidGlassEnabled = false;
         document.getElementById('enableLiquidGlass').checked = false;
+        if (settingsCog) settingsCog.style.display = 'flex';
         return;
     }
 
     // Start with liquid glass disabled, regular cog visible
     liquidGlassEnabled = false;
     document.getElementById('enableLiquidGlass').checked = false;
+
+    // Show the regular blue CSS cog during popup
+    if (settingsCog) settingsCog.style.display = 'flex';
 
     // Show popup
     popup.classList.add('show');
@@ -68,6 +73,9 @@ function showOnboardingPopup() {
         liquidGlassEnabled = true;
         document.getElementById('enableLiquidGlass').checked = true;
         popup.classList.remove('show');
+
+        // Hide the blue CSS cog (glass version will replace it)
+        if (settingsCog) settingsCog.style.display = 'none';
 
         // Initialize after a short delay for smooth transition
         setTimeout(() => {
@@ -257,8 +265,8 @@ function initGlassSettingsButton() {
     }
 
     try {
-        // Hide the original button visually but keep it for functionality
-        settingsCog.classList.add('glass-hidden');
+        // Hide the original blue CSS button (glass version will replace it)
+        settingsCog.style.display = 'none';
 
         // Create a glass button
         glassSettingsButton = new Button({
@@ -314,8 +322,8 @@ function initGlassSettingsButton() {
         console.log('%cGlass settings button initialized!', 'color: #10b981; font-weight: bold;');
     } catch (error) {
         console.error('Failed to initialize glass settings button:', error);
-        // Restore original button on error
-        settingsCog.classList.remove('glass-hidden');
+        // Show original blue button on error
+        settingsCog.style.display = 'flex';
     }
 }
 
@@ -326,9 +334,10 @@ function disableGlassSettingsButton() {
         glassSettingsButton = null;
     }
 
+    // Show the original blue CSS button
     const settingsCog = document.getElementById('settings-cog');
     if (settingsCog) {
-        settingsCog.classList.remove('glass-hidden');
+        settingsCog.style.display = 'flex';
     }
 }
 
