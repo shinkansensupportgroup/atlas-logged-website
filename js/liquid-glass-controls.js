@@ -25,20 +25,84 @@ window.glassControls = { ...defaultSettings };
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-    // Load saved enabled state
-    const saved = localStorage.getItem('atlas-liquid-glass-enabled');
-    liquidGlassEnabled = saved === null ? true : saved === 'true';
+    const isMobile = window.innerWidth <= 768;
+    const hasOnboarded = localStorage.getItem('atlas-liquid-glass-onboarded');
 
-    document.getElementById('enableLiquidGlass').checked = liquidGlassEnabled;
+    // Show onboarding popup for first-time mobile users
+    if (isMobile && !hasOnboarded) {
+        showOnboardingPopup();
+    } else {
+        // Load saved enabled state for returning users or desktop
+        const saved = localStorage.getItem('atlas-liquid-glass-enabled');
+        liquidGlassEnabled = saved === null ? true : saved === 'true';
 
-    if (liquidGlassEnabled) {
-        initLiquidGlass();
-        initGlassSettingsButton();
+        document.getElementById('enableLiquidGlass').checked = liquidGlassEnabled;
+
+        if (liquidGlassEnabled) {
+            initLiquidGlass();
+            initGlassSettingsButton();
+        }
     }
 
     initControls();
     loadSavedSettings();
 });
+
+// Show onboarding popup for mobile users
+function showOnboardingPopup() {
+    const popup = document.getElementById('liquid-glass-onboarding');
+    const enableButton = document.getElementById('onboarding-enable');
+    const disableButton = document.getElementById('onboarding-disable');
+
+    if (!popup || !enableButton || !disableButton) {
+        console.warn('Onboarding elements not found');
+        // Fallback: enable by default
+        liquidGlassEnabled = true;
+        document.getElementById('enableLiquidGlass').checked = true;
+        initLiquidGlass();
+        initGlassSettingsButton();
+        return;
+    }
+
+    // Show popup
+    popup.classList.add('show');
+
+    // Handle "Enable" button
+    enableButton.addEventListener('click', () => {
+        liquidGlassEnabled = true;
+        localStorage.setItem('atlas-liquid-glass-enabled', 'true');
+        localStorage.setItem('atlas-liquid-glass-onboarded', 'true');
+        document.getElementById('enableLiquidGlass').checked = true;
+
+        popup.classList.remove('show');
+
+        // Initialize after a short delay for smooth transition
+        setTimeout(() => {
+            initLiquidGlass();
+            initGlassSettingsButton();
+        }, 300);
+    });
+
+    // Handle "No Thanks" button
+    disableButton.addEventListener('click', () => {
+        liquidGlassEnabled = false;
+        localStorage.setItem('atlas-liquid-glass-enabled', 'false');
+        localStorage.setItem('atlas-liquid-glass-onboarded', 'true');
+        document.getElementById('enableLiquidGlass').checked = false;
+
+        popup.classList.remove('show');
+
+        // User chose not to enable, just show the settings cog (non-glass version)
+        console.log('%cLiquid glass disabled by user choice', 'color: #64748b;');
+    });
+
+    // Close on backdrop click
+    const backdrop = popup.querySelector('.onboarding-backdrop');
+    backdrop?.addEventListener('click', () => {
+        // Treat backdrop click as "No Thanks"
+        disableButton.click();
+    });
+}
 
 // Initialize liquid glass on navigation
 function initLiquidGlass() {
