@@ -131,7 +131,6 @@ Site uses custom domain `atlaslogged.com` configured via:
 ### Documentation Files
 - `README.md` - Comprehensive setup and customization guide
 - `DEPLOYMENT_CHECKLIST.md` - Deployment verification checklist
-- `LIQUID_GLASS_IMPLEMENTATION.md` - (Outdated) Previous attempt at complex liquid glass - see CLAUDE.md for current approach
 - `deploy.sh` - Legacy manual deployment script (not used; GitHub Actions handles deployment)
 
 ### Design Philosophy
