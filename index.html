@@ -36,6 +36,7 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/liquid-glass.css">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/favicon.png">
@@ -205,6 +206,114 @@
         </div>
     </footer>
 
+    <!-- Liquid Glass Settings Panel -->
+    <div class="glass-settings-panel" id="glass-settings-panel">
+        <div class="settings-header">
+            <h3>Liquid Glass Controls</h3>
+            <button id="close-settings" class="close-button" aria-label="Close settings">×</button>
+        </div>
+        <div class="settings-content">
+            <!-- Enable/Disable Toggle -->
+            <div class="setting-group toggle-group">
+                <label for="enableLiquidGlass" class="toggle-label">
+                    <span>Enable Liquid Glass</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="enableLiquidGlass" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
+
+            <!-- Slider Controls -->
+            <div class="setting-group">
+                <label for="edgeIntensity">
+                    <span>Edge Intensity</span>
+                    <span class="setting-value">0.010</span>
+                </label>
+                <input type="range" id="edgeIntensity" min="0" max="0.1" step="0.001" value="0.01">
+            </div>
+            <div class="setting-group">
+                <label for="rimIntensity">
+                    <span>Rim Intensity</span>
+                    <span class="setting-value">0.050</span>
+                </label>
+                <input type="range" id="rimIntensity" min="0" max="0.2" step="0.001" value="0.05">
+            </div>
+            <div class="setting-group">
+                <label for="baseIntensity">
+                    <span>Base Intensity</span>
+                    <span class="setting-value">0.010</span>
+                </label>
+                <input type="range" id="baseIntensity" min="0" max="0.1" step="0.001" value="0.01">
+            </div>
+            <div class="setting-group">
+                <label for="edgeDistance">
+                    <span>Edge Distance</span>
+                    <span class="setting-value">0.150</span>
+                </label>
+                <input type="range" id="edgeDistance" min="0" max="0.5" step="0.01" value="0.15">
+            </div>
+            <div class="setting-group">
+                <label for="rimDistance">
+                    <span>Rim Distance</span>
+                    <span class="setting-value">0.800</span>
+                </label>
+                <input type="range" id="rimDistance" min="0" max="1" step="0.01" value="0.8">
+            </div>
+            <div class="setting-group">
+                <label for="baseDistance">
+                    <span>Base Distance</span>
+                    <span class="setting-value">0.100</span>
+                </label>
+                <input type="range" id="baseDistance" min="0" max="0.5" step="0.01" value="0.1">
+            </div>
+            <div class="setting-group">
+                <label for="cornerBoost">
+                    <span>Corner Boost</span>
+                    <span class="setting-value">0.020</span>
+                </label>
+                <input type="range" id="cornerBoost" min="0" max="0.1" step="0.001" value="0.02">
+            </div>
+            <div class="setting-group">
+                <label for="rippleEffect">
+                    <span>Ripple Effect</span>
+                    <span class="setting-value">0.100</span>
+                </label>
+                <input type="range" id="rippleEffect" min="0" max="0.5" step="0.01" value="0.1">
+            </div>
+            <div class="setting-group">
+                <label for="blurRadius">
+                    <span>Blur Radius</span>
+                    <span class="setting-value">5.000</span>
+                </label>
+                <input type="range" id="blurRadius" min="0" max="20" step="0.1" value="5.0">
+            </div>
+            <div class="setting-group">
+                <label for="tintOpacity">
+                    <span>Tint Opacity</span>
+                    <span class="setting-value">0.200</span>
+                </label>
+                <input type="range" id="tintOpacity" min="0" max="1" step="0.01" value="0.2">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="settings-actions">
+                <button id="randomize-button" class="action-button">Randomize</button>
+                <button id="reset-button" class="action-button">Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Cog Button -->
+    <button id="settings-cog" class="settings-cog" aria-label="Open liquid glass settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m0-18l-2.8 2.8M12 1l2.8 2.8m-8.4 6.4L1 12l2.8 2.8M1 12l6-2.8M1 12l6 2.8m4.4 6.4L12 23l-2.8-2.8M12 23l2.8-2.8m6.4-8.4L23 12l-2.8-2.8M23 12l-6 2.8M23 12l-6-2.8"></path>
+        </svg>
+    </button>
+
     <!-- Chatwoot Widget -->
     <script>
         window.chatwootSettings = {
@@ -233,5 +342,11 @@
 
     <!-- Custom JavaScript -->
     <script src="js/main.js"></script>
+
+    <!-- Liquid Glass Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="js/liquid-glass-container.js"></script>
+    <script src="js/liquid-glass-button.js"></script>
+    <script src="js/liquid-glass-controls.js"></script>
 </body>
 </html>
