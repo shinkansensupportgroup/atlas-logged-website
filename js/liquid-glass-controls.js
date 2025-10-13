@@ -202,8 +202,9 @@ function initGlassSettingsButton() {
             type: 'circle',
             tintOpacity: window.glassControls.tintOpacity,
             onClick: () => {
-                // Trigger the original button click
-                settingsCog.click();
+                // Directly toggle the settings panel
+                const settingsPanel = document.getElementById('glass-settings-panel');
+                settingsPanel?.classList.toggle('open');
             }
         });
 
@@ -282,7 +283,11 @@ function initControls() {
 
     // Close panel when clicking outside
     document.addEventListener('click', (e) => {
-        if (!settingsPanel?.contains(e.target) && !settingsCog?.contains(e.target)) {
+        const isClickOnPanel = settingsPanel?.contains(e.target);
+        const isClickOnOriginalCog = settingsCog?.contains(e.target);
+        const isClickOnGlassCog = glassSettingsButton?.element?.contains(e.target);
+
+        if (!isClickOnPanel && !isClickOnOriginalCog && !isClickOnGlassCog) {
             settingsPanel?.classList.remove('open');
         }
     });
