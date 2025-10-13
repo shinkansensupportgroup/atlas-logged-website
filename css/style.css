@@ -75,21 +75,26 @@ nav {
     z-index: 1000;
 }
 
-/* Liquid Glass Enhancement - Desktop Chromium Only */
-/* Creates a distortion overlay using SVG filters */
+/* Subtle distortion on background - Chromium Desktop only */
 @media (min-width: 1024px) {
     html:not(.is-safari) nav::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        filter: url(#liquid-glass-subtle);
+        inset: 0;
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        filter: url(#glass-distortion);
         pointer-events: none;
+        z-index: -1;
         opacity: 0.6;
     }
+
+    html:not(.is-safari) nav > * {
+        position: relative;
+        z-index: 1;
+    }
 }
+
 
 .nav-content {
     display: flex;
@@ -137,7 +142,6 @@ nav {
 }
 
 .nav-links .btn-primary {
-    position: relative;
     background: rgba(37, 99, 235, 0.85);
     backdrop-filter: blur(10px) saturate(150%);
     -webkit-backdrop-filter: blur(10px) saturate(150%);
@@ -158,21 +162,6 @@ nav {
     color: #ffffff;
 }
 
-/* Liquid Glass for Primary Button - Desktop Chromium */
-@media (min-width: 1024px) {
-    html:not(.is-safari) .nav-links .btn-primary::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        border-radius: 0.5rem;
-        filter: url(#liquid-glass-subtle);
-        pointer-events: none;
-        opacity: 0.4;
-    }
-}
 
 /* Hero Section */
 .hero {
@@ -228,7 +217,6 @@ nav {
 }
 
 .btn-download {
-    position: relative;
     display: inline-block;
     background: rgba(37, 99, 235, 0.85);
     backdrop-filter: blur(10px) saturate(150%);
@@ -252,21 +240,6 @@ nav {
                 inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
-/* Liquid Glass for Download Button - Desktop Chromium */
-@media (min-width: 1024px) {
-    html:not(.is-safari) .btn-download::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        border-radius: 0.75rem;
-        filter: url(#liquid-glass-subtle);
-        pointer-events: none;
-        opacity: 0.5;
-    }
-}
 
 /* Features Section */
 .features {
@@ -312,20 +285,19 @@ nav {
                 inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-/* Liquid Glass for Feature Cards - Desktop Chromium */
+/* Subtle distortion on feature backgrounds - Chromium Desktop only */
 @media (min-width: 1024px) {
     html:not(.is-safari) .feature::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        inset: 0;
         border-radius: 1.5rem;
-        filter: url(#liquid-glass-subtle);
+        backdrop-filter: blur(10px) saturate(160%);
+        -webkit-backdrop-filter: blur(10px) saturate(160%);
+        filter: url(#glass-distortion);
         pointer-events: none;
-        opacity: 0.5;
         z-index: 0;
+        opacity: 0.7;
     }
 
     html:not(.is-safari) .feature > * {
@@ -333,6 +305,7 @@ nav {
         z-index: 1;
     }
 }
+
 
 .feature-icon {
     font-size: 4rem;
@@ -556,7 +529,6 @@ nav {
 
 /* Footer - Glassmorphism */
 footer {
-    position: relative;
     padding: 3rem 2rem;
     background: linear-gradient(135deg,
         rgba(30, 41, 59, 0.95) 0%,
@@ -568,25 +540,6 @@ footer {
     color: #ffffff;
 }
 
-/* Liquid Glass for Footer - Desktop Chromium */
-@media (min-width: 1024px) {
-    html:not(.is-safari) footer::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        filter: url(#liquid-glass-subtle);
-        pointer-events: none;
-        opacity: 0.3;
-    }
-
-    html:not(.is-safari) footer > * {
-        position: relative;
-        z-index: 1;
-    }
-}
 
 .footer-content {
     display: flex;
