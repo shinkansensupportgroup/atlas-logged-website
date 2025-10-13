@@ -1145,6 +1145,13 @@ body {
     font-size: 0.875rem;
     color: #f59e0b;
     font-weight: 500;
+    margin-bottom: 0.5rem !important;
+}
+
+.onboarding-note-two {
+    font-size: 0.8125rem;
+    color: #64748b;
+    font-style: italic;
     margin-bottom: 1.5rem !important;
 }
 
