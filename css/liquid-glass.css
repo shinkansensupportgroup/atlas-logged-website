@@ -7,6 +7,11 @@
   gap: 20px;
   padding: 10px;
   box-sizing: border-box;
+  background: transparent !important;
+}
+
+.glass-container canvas {
+  background: transparent !important;
 }
 
 .glass-container-circle {

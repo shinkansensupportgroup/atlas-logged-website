@@ -177,6 +177,7 @@ class Container {
     }
 
     this.element.style.borderRadius = this.borderRadius + 'px'
+    this.element.style.background = 'transparent' // Ensure transparent background
 
     // Create canvas (will be sized after DOM layout)
     this.canvas = document.createElement('canvas')
@@ -186,18 +187,28 @@ class Container {
     this.canvas.style.left = '0'
     this.canvas.style.width = '100%'
     this.canvas.style.height = '100%'
-    this.canvas.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.25)'
+    this.canvas.style.boxShadow = 'none' // Remove shadow for nav
     this.canvas.style.zIndex = '-1' // Canvas behind children
+    this.canvas.style.background = 'transparent' // Transparent canvas background
 
     this.element.appendChild(this.canvas)
   }
 
   setupCanvas() {
-    this.gl = this.canvas.getContext('webgl', { preserveDrawingBuffer: true })
+    this.gl = this.canvas.getContext('webgl', {
+      preserveDrawingBuffer: true,
+      alpha: true,
+      premultipliedAlpha: true,
+      antialias: true
+    })
     if (!this.gl) {
       console.error('WebGL not supported')
       return
     }
+
+    // Enable blending for transparency
+    this.gl.enable(this.gl.BLEND)
+    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
   }
 
   getPosition() {

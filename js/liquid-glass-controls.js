@@ -77,6 +77,7 @@ function initLiquidGlass() {
         glassContainer.element.style.height = rect.height + 'px';
         glassContainer.element.style.zIndex = '999'; // Below nav content
         glassContainer.element.style.pointerEvents = 'none'; // Allow clicks through
+        glassContainer.element.style.background = 'transparent'; // Ensure transparent background
 
         // Insert glass container before nav
         nav.parentNode.insertBefore(glassContainer.element, nav);
