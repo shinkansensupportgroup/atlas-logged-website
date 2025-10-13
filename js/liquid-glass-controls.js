@@ -209,12 +209,16 @@ function initGlassSettingsButton() {
         });
 
         // Style the glass button to match original position
+        const isMobile = window.innerWidth <= 768;
         glassSettingsButton.element.style.position = 'fixed';
-        glassSettingsButton.element.style.bottom = '2rem';
-        glassSettingsButton.element.style.left = '2rem';
+        glassSettingsButton.element.style.bottom = isMobile ? '1rem' : '2rem';
+        glassSettingsButton.element.style.left = isMobile ? '1rem' : '2rem';
         glassSettingsButton.element.style.zIndex = '9999';
         glassSettingsButton.element.style.cursor = 'pointer';
         glassSettingsButton.element.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+
+        // Ensure proper touch handling on mobile
+        glassSettingsButton.element.style.touchAction = 'manipulation';
 
         // Add hover effect
         glassSettingsButton.element.addEventListener('mouseenter', () => {
