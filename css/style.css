@@ -76,9 +76,18 @@ nav {
 }
 
 /* Liquid Glass Enhancement - Desktop Chromium Only */
+/* Creates a distortion overlay using SVG filters */
 @media (min-width: 1024px) {
-    html:not(.is-safari) nav {
-        backdrop-filter: blur(20px) saturate(180%) url(#liquid-glass-subtle);
+    html:not(.is-safari) nav::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        filter: url(#liquid-glass-subtle);
+        pointer-events: none;
+        opacity: 0.6;
     }
 }
 
@@ -128,6 +137,7 @@ nav {
 }
 
 .nav-links .btn-primary {
+    position: relative;
     background: rgba(37, 99, 235, 0.85);
     backdrop-filter: blur(10px) saturate(150%);
     -webkit-backdrop-filter: blur(10px) saturate(150%);
@@ -150,8 +160,17 @@ nav {
 
 /* Liquid Glass for Primary Button - Desktop Chromium */
 @media (min-width: 1024px) {
-    html:not(.is-safari) .nav-links .btn-primary {
-        backdrop-filter: blur(10px) saturate(150%) url(#liquid-glass-subtle);
+    html:not(.is-safari) .nav-links .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 0.5rem;
+        filter: url(#liquid-glass-subtle);
+        pointer-events: none;
+        opacity: 0.4;
     }
 }
 
@@ -209,6 +228,7 @@ nav {
 }
 
 .btn-download {
+    position: relative;
     display: inline-block;
     background: rgba(37, 99, 235, 0.85);
     backdrop-filter: blur(10px) saturate(150%);
@@ -234,8 +254,17 @@ nav {
 
 /* Liquid Glass for Download Button - Desktop Chromium */
 @media (min-width: 1024px) {
-    html:not(.is-safari) .btn-download {
-        backdrop-filter: blur(10px) saturate(150%) url(#liquid-glass-subtle);
+    html:not(.is-safari) .btn-download::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 0.75rem;
+        filter: url(#liquid-glass-subtle);
+        pointer-events: none;
+        opacity: 0.5;
     }
 }
 
@@ -263,6 +292,7 @@ nav {
 }
 
 .feature {
+    position: relative;
     text-align: center;
     padding: 2rem;
     background: rgba(255, 255, 255, 0.6);
@@ -273,6 +303,7 @@ nav {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06),
                 inset 0 1px 0 rgba(255, 255, 255, 0.8);
     transition: all 0.3s ease;
+    overflow: hidden;
 }
 
 .feature:hover {
@@ -283,8 +314,23 @@ nav {
 
 /* Liquid Glass for Feature Cards - Desktop Chromium */
 @media (min-width: 1024px) {
-    html:not(.is-safari) .feature {
-        backdrop-filter: blur(10px) saturate(160%) url(#liquid-glass-subtle);
+    html:not(.is-safari) .feature::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 1.5rem;
+        filter: url(#liquid-glass-subtle);
+        pointer-events: none;
+        opacity: 0.5;
+        z-index: 0;
+    }
+
+    html:not(.is-safari) .feature > * {
+        position: relative;
+        z-index: 1;
     }
 }
 
@@ -510,6 +556,7 @@ nav {
 
 /* Footer - Glassmorphism */
 footer {
+    position: relative;
     padding: 3rem 2rem;
     background: linear-gradient(135deg,
         rgba(30, 41, 59, 0.95) 0%,
@@ -523,8 +570,21 @@ footer {
 
 /* Liquid Glass for Footer - Desktop Chromium */
 @media (min-width: 1024px) {
-    html:not(.is-safari) footer {
-        backdrop-filter: blur(20px) saturate(150%) url(#liquid-glass-subtle);
+    html:not(.is-safari) footer::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        filter: url(#liquid-glass-subtle);
+        pointer-events: none;
+        opacity: 0.3;
+    }
+
+    html:not(.is-safari) footer > * {
+        position: relative;
+        z-index: 1;
     }
 }
 

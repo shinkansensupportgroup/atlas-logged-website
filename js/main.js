@@ -7,16 +7,18 @@ document.addEventListener('DOMContentLoaded', () => {
     initMobileMenu();
 });
 
-// Safari Browser Detection
+// Safari Browser Detection for Progressive Enhancement
 function detectSafari() {
     // Detect Safari browser (but not Chrome which also has Safari in UA)
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
     if (isSafari) {
         document.documentElement.classList.add('is-safari');
-        console.log('%cSafari detected - using glassmorphism mode', 'color: #2563eb;');
+        console.log('%cSafari detected - using standard glassmorphism', 'color: #2563eb;');
+        console.log('%c(Liquid glass distortion effects only work in Chromium)', 'color: #64748b; font-size: 11px;');
     } else {
-        console.log('%cChromium detected - liquid glass enabled!', 'color: #10b981;');
+        console.log('%cChromium detected - liquid glass distortion enabled!', 'color: #10b981;');
+        console.log('%c(SVG filter-based refraction effects active on desktop)', 'color: #64748b; font-size: 11px;');
     }
 }
 

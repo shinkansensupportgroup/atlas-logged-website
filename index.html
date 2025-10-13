@@ -71,19 +71,61 @@
     <!-- Skip to main content link for accessibility -->
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
 
-    <!-- SVG Filters for Liquid Glass Effect -->
+    <!-- SVG Filters for Liquid Glass Effect (Chromium only) -->
     <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
         <defs>
-            <filter id="liquid-glass" x="-50%" y="-50%" width="200%" height="200%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="3" result="noise" />
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="10" xChannelSelector="R" yChannelSelector="G" />
-                <feGaussianBlur stdDeviation="1" />
+            <!-- Main liquid glass distortion filter -->
+            <filter id="liquid-glass" color-interpolation-filters="sRGB" x="-50%" y="-50%" width="200%" height="200%">
+                <!-- Create organic noise pattern -->
+                <feTurbulence
+                    type="fractalNoise"
+                    baseFrequency="0.015 0.015"
+                    numOctaves="3"
+                    seed="2"
+                    result="turbulence" />
+
+                <!-- Soften the noise for smoother distortion -->
+                <feGaussianBlur in="turbulence" stdDeviation="4" result="softNoise" />
+
+                <!-- Create displacement map for refraction effect -->
+                <feDisplacementMap
+                    in="SourceGraphic"
+                    in2="softNoise"
+                    scale="15"
+                    xChannelSelector="R"
+                    yChannelSelector="G"
+                    result="displaced" />
+
+                <!-- Optional: Add subtle specular highlights -->
+                <feSpecularLighting
+                    in="softNoise"
+                    surfaceScale="3"
+                    specularConstant="0.8"
+                    specularExponent="20"
+                    lighting-color="white"
+                    result="specular">
+                    <fePointLight x="-500" y="-500" z="400" />
+                </feSpecularLighting>
+
+                <!-- Blend the specular with displaced -->
+                <feComposite in="displaced" in2="specular" operator="arithmetic" k1="0" k2="1" k3="0.1" k4="0" />
             </filter>
 
-            <filter id="liquid-glass-subtle" x="-50%" y="-50%" width="200%" height="200%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="noise" />
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G" />
-                <feGaussianBlur stdDeviation="0.5" />
+            <!-- Subtle version for smaller elements -->
+            <filter id="liquid-glass-subtle" color-interpolation-filters="sRGB" x="-50%" y="-50%" width="200%" height="200%">
+                <feTurbulence
+                    type="fractalNoise"
+                    baseFrequency="0.02 0.02"
+                    numOctaves="2"
+                    seed="5"
+                    result="turbulence" />
+                <feGaussianBlur in="turbulence" stdDeviation="3" result="softNoise" />
+                <feDisplacementMap
+                    in="SourceGraphic"
+                    in2="softNoise"
+                    scale="8"
+                    xChannelSelector="R"
+                    yChannelSelector="G" />
             </filter>
         </defs>
     </svg>
