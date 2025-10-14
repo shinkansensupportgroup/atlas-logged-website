@@ -4,6 +4,10 @@ Modern, animated landing page for atlaslogged.com built with vanilla HTML, CSS, 
 
 ## Features
 
+- **Liquid Glass Effects**: Optional WebGL-based glass effects with real-time background blur
+  - Desktop: Enabled by default
+  - Mobile: Opt-in via popup (resets on page reload)
+  - Live controls panel for adjusting glass parameters
 - **Smooth Animations**: GSAP-powered scroll animations and transitions
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
 - **Privacy-Focused Content**: Highlights the app's privacy-first approach
@@ -16,16 +20,21 @@ Modern, animated landing page for atlaslogged.com built with vanilla HTML, CSS, 
 
 ```
 website/
-├── index.html          # Main landing page
+├── index.html                      # Main landing page
 ├── css/
-│   └── style.css      # Custom styles and animations
+│   ├── style.css                  # Custom styles and animations
+│   └── liquid-glass.css           # Liquid glass effect styles
 ├── js/
-│   └── main.js        # Interactive elements and GSAP animations
+│   ├── main.js                    # Interactive elements and GSAP animations
+│   ├── liquid-glass-container.js  # WebGL container for liquid glass
+│   ├── liquid-glass-button.js     # Glass button component
+│   └── liquid-glass-controls.js   # Settings and controls for liquid glass
 ├── assets/
-│   ├── logo.png       # App logo (1024x1024)
-│   └── screenshots/   # iOS app screenshots (to be added)
-├── CNAME              # Custom domain configuration
-└── README.md          # This file
+│   ├── logo.png                   # App logo (1024x1024)
+│   ├── app-store-badge.svg        # App Store download badge
+│   └── screenshots/               # iOS app screenshots (to be added)
+├── CNAME                          # Custom domain configuration
+└── README.md                      # This file
 ```
 
 ## Setup
@@ -154,6 +163,8 @@ Customize animations in `js/main.js`:
 - **ScrollTrigger**: Scroll-based animations
 - **Vanilla JavaScript**: No framework dependencies
 - **Chatwoot**: Open-source live chat support
+- **[liquid-glass-js](https://github.com/dashersw/liquid-glass-js)**: WebGL-based liquid glass effect library
+- **[html2canvas](https://html2canvas.hertzen.com/)**: Screenshot library for background capture (used by liquid-glass-js)
 
 ## Performance
 
