@@ -24,18 +24,42 @@ function detectSafari() {
 function initFAQ() {
     const faqItems = document.querySelectorAll('.faq-item');
 
+    // Exit early if no FAQ items exist on this page
+    if (faqItems.length === 0) {
+        return;
+    }
+
     faqItems.forEach(item => {
         const question = item.querySelector('.faq-question');
 
-        question.addEventListener('click', () => {
+        // Function to toggle FAQ
+        const toggleFAQ = () => {
             const isOpen = item.classList.contains('open');
 
-            // Close all FAQs
-            faqItems.forEach(faq => faq.classList.remove('open'));
+            // Close all FAQs and update their aria-expanded
+            faqItems.forEach(faq => {
+                faq.classList.remove('open');
+                const faqQuestion = faq.querySelector('.faq-question');
+                if (faqQuestion) {
+                    faqQuestion.setAttribute('aria-expanded', 'false');
+                }
+            });
 
             // Toggle current FAQ
             if (!isOpen) {
                 item.classList.add('open');
+                question.setAttribute('aria-expanded', 'true');
+            }
+        };
+
+        // Click event
+        question.addEventListener('click', toggleFAQ);
+
+        // Keyboard support for accessibility (Enter and Space keys)
+        question.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault(); // Prevent page scroll on Space
+                toggleFAQ();
             }
         });
     });
@@ -43,7 +67,14 @@ function initFAQ() {
 
 // Smooth Scroll for Navigation
 function initSmoothScroll() {
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    const smoothScrollLinks = document.querySelectorAll('a[href^="#"]');
+
+    // Exit early if no anchor links exist
+    if (smoothScrollLinks.length === 0) {
+        return;
+    }
+
+    smoothScrollLinks.forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
             const target = document.querySelector(this.getAttribute('href'));

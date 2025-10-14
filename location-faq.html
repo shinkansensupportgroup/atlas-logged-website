@@ -48,19 +48,24 @@
     <!-- Skip to main content link for accessibility -->
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
 
-    <!-- SVG Filters for Glass Distortion -->
+    <!-- SVG Filters for Subtle Glass Distortion (Chromium only) -->
     <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
         <defs>
-            <filter id="glass-distortion" x="-50%" y="-50%" width="200%" height="200%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="3" result="noise" />
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="10" xChannelSelector="R" yChannelSelector="G" />
-                <feGaussianBlur stdDeviation="1" />
-            </filter>
-
-            <filter id="glass-distortion-subtle" x="-50%" y="-50%" width="200%" height="200%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="noise" />
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G" />
-                <feGaussianBlur stdDeviation="0.5" />
+            <!-- Very subtle distortion filter - barely noticeable -->
+            <filter id="glass-distortion" color-interpolation-filters="sRGB" x="-50%" y="-50%" width="200%" height="200%">
+                <feTurbulence
+                    type="fractalNoise"
+                    baseFrequency="0.01 0.01"
+                    numOctaves="1"
+                    seed="7"
+                    result="noise" />
+                <feGaussianBlur in="noise" stdDeviation="1.5" result="smooth" />
+                <feDisplacementMap
+                    in="SourceGraphic"
+                    in2="smooth"
+                    scale="3"
+                    xChannelSelector="R"
+                    yChannelSelector="G" />
             </filter>
         </defs>
     </svg>
