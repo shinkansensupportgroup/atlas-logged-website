@@ -1,0 +1,30 @@
+# Atlas Logged
+> Privacy-first location tracking iOS app. Automatically tracks your travels with complete data privacy - all data stays on your device.
+
+Atlas Logged is a mobile application for iOS that provides automatic location tracking with configurable privacy levels. The app is designed for travelers who want to maintain a personal travel history without compromising their privacy. All location data is stored locally on the user's device by default, with optional iCloud sync.
+
+## Product Information
+- [Home](https://atlaslogged.com/): Main landing page with feature overview and download link
+- [App Store](https://apps.apple.com/us/app/atlas-logged/id6538725214): Download Atlas Logged for iOS (requires iOS 17.0 or later)
+
+## Key Features
+- Automatic location tracking with 4 privacy levels: Country, City, Precise, and Maximum
+- 100% on-device data storage with optional iCloud sync
+- Battery efficient: Less than 1% battery usage per day
+- Travel calendar with visual history and statistics
+- Manual entry fallback for privacy-conscious users
+- Photo integration with travel timeline
+
+## Privacy & Support
+- [Privacy Policy](https://atlaslogged.com/privacy.html): Complete transparency about data handling - no collection, no transmission, uses only Apple's native frameworks (Core Location, Core Data, CloudKit)
+- [Location FAQ](https://atlaslogged.com/location-faq.html): Common questions about location permissions, battery usage, and iOS background tracking
+
+## Technical Details
+- Platform: iOS 17.0 or later
+- Technologies: Core Location, Core Data, CloudKit (optional), PhotoKit (optional)
+- Price: Free
+- Developer: Atlas Codes
+- Contact: support@atlascodes.ai
+
+## Use Cases
+Atlas Logged is ideal for travelers, digital nomads, frequent business travelers, and anyone who wants to maintain a private record of places they've visited. The app emphasizes user privacy and data ownership over cloud-based tracking solutions.

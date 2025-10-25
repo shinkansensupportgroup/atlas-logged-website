@@ -206,6 +206,6 @@ Proprietary - Atlas Logged © 2024
 ## Support
 
 For questions or issues:
-- Email: support@atlascodes.io
+- Email: support@atlascodes.ai
 - Privacy Policy: https://atlascodes.ai/atlas-logged-privacy-policy
 - FAQ: https://simcity.dev/atlas-logged-location-faq

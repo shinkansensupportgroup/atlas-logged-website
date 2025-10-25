@@ -161,7 +161,7 @@ git push origin main
 
 - Documentation: `website/README.md`
 - Setup Guide: `WEBSITE_SETUP.md`
-- Email: support@atlascodes.io
+- Email: support@atlascodes.ai
 
 ---
 
