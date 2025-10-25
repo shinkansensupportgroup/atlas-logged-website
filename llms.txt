@@ -3,6 +3,10 @@
 
 Atlas Logged is a mobile application for iOS that provides automatic location tracking with configurable privacy levels. The app is designed for travelers who want to maintain a personal travel history without compromising their privacy. All location data is stored locally on the user's device by default, with optional iCloud sync.
 
+## Latest Updates
+- [What's New](https://atlaslogged.com/changelog.html): Latest version (1.1.20) includes Travel Planner, iCloud sync options, and Arabic language support
+- [Roadmap](https://atlaslogged.com/roadmap.html): Upcoming features including photo integration, smart predictions, and visa tracking
+
 ## Product Information
 - [Home](https://atlaslogged.com/): Main landing page with feature overview and download link
 - [App Store](https://apps.apple.com/us/app/atlas-logged/id6538725214): Download Atlas Logged for iOS (requires iOS 17.0 or later)
