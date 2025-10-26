@@ -43,15 +43,20 @@ Generate thumbnails for loading states:
 ffmpeg -i v2.0.0.mp4 -ss 00:00:02 -vframes 1 -q:v 2 v2.0.0-thumb.jpg
 ```
 
-## Git LFS
+## Hosting Strategy
 
-Videos are tracked with Git LFS (Large File Storage) to keep the repository size small.
+**IMPORTANT:** Videos are hosted as **GitHub Release Assets**, NOT served via GitHub Pages.
 
-- Videos are stored separately on GitHub LFS
-- Only pointer files are committed to Git
-- Clones automatically download current videos
+### Why GitHub Releases?
 
-**LFS Quota:** 1GB storage, 1GB bandwidth/month (free tier)
+GitHub Pages does NOT serve Git LFS files correctly - it serves the pointer files instead of actual videos. Therefore:
+
+- ✅ **Upload videos to GitHub Releases** as release assets
+- ✅ Get direct download URLs from release assets
+- ✅ No bandwidth/size concerns (2GB per file limit)
+- ❌ **Do NOT commit videos to this repo** (even with LFS)
+
+Git LFS is configured in this repo for reference, but videos are NOT stored here.
 
 ## Naming Convention
 
@@ -72,28 +77,39 @@ videos/
 
 ## Usage in App
 
-Videos are referenced in the changelog.json:
+Videos are referenced in the changelog.json using **GitHub Release asset URLs**:
 
 ```json
 {
   "version": "2.0.0",
   "video": {
-    "url": "https://atlaslogged.com/videos/releases/v2.0.0.mp4",
-    "thumbnail": "https://atlaslogged.com/videos/releases/v2.0.0-thumb.jpg",
+    "url": "https://github.com/shinkansensupportgroup/atlas-logged/releases/download/v2.0.0/v2.0.0.mp4",
+    "thumbnail": "https://github.com/shinkansensupportgroup/atlas-logged/releases/download/v2.0.0/v2.0.0-thumb.jpg",
     "duration": 60,
     "size": 35000000
   }
 }
 ```
 
+**URL Pattern:** `https://github.com/{owner}/{repo}/releases/download/{tag}/{filename}`
+
 ## Adding New Videos
 
 1. Optimize video using ffmpeg command above
 2. Generate thumbnail
-3. Add to this directory
-4. Commit with git (LFS handles automatically)
-5. Update changelog.json in app repo
-6. GitHub Actions will sync everything
+3. **Upload as GitHub Release assets** when creating the release (via GitHub UI or `gh release create`)
+4. Update changelog.json in app repo with release asset URLs
+5. GitHub Actions will create draft release (then manually upload videos and publish)
+
+Example with GitHub CLI:
+```bash
+gh release create v2.0.0 \
+  --title "Atlas Logged v2.0.0" \
+  --notes "Release notes here" \
+  --draft \
+  v2.0.0.mp4 \
+  v2.0.0-thumb.jpg
+```
 
 ## Notes
 
