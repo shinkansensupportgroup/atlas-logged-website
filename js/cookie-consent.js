@@ -38,7 +38,7 @@
     }
 
     // Load Chatwoot widget
-    function loadChatwoot() {
+    function loadChatwoot(autoOpen) {
         // Configure Chatwoot settings
         window.chatwootSettings = {
             hideMessageBubble: false,
@@ -61,6 +61,25 @@
                     websiteToken: CHATWOOT_CONFIG.websiteToken,
                     baseUrl: BASE_URL
                 });
+
+                // Auto-open widget if requested (e.g., from app with ?consent=chat)
+                if (autoOpen) {
+                    // Wait for Chatwoot to be ready before opening
+                    window.addEventListener('chatwoot:ready', function() {
+                        setTimeout(function() {
+                            if (window.$chatwoot) {
+                                window.$chatwoot.toggle('open');
+                            }
+                        }, 500);
+                    });
+
+                    // Fallback: If chatwoot:ready already fired
+                    setTimeout(function() {
+                        if (window.$chatwoot) {
+                            window.$chatwoot.toggle('open');
+                        }
+                    }, 1500);
+                }
             }
         };
 
@@ -68,10 +87,10 @@
     }
 
     // Accept cookies and load Chatwoot
-    function acceptCookies() {
+    function acceptCookies(autoOpen) {
         saveConsentStatus('accepted');
         hideCookieBanner();
-        loadChatwoot();
+        loadChatwoot(autoOpen);
     }
 
     // Reject cookies
@@ -252,7 +271,9 @@
         document.body.appendChild(banner);
 
         // Add event listeners
-        document.getElementById('cookie-accept').addEventListener('click', acceptCookies);
+        document.getElementById('cookie-accept').addEventListener('click', function() {
+            acceptCookies(false); // Don't auto-open when accepting from banner
+        });
         document.getElementById('cookie-reject').addEventListener('click', rejectCookies);
     }
 
@@ -285,19 +306,24 @@
 
     // Initialize on DOM ready
     function init() {
-        // If coming from app, auto-accept and load Chatwoot
-        if (isFromApp()) {
+        // Check if URL has consent=chat parameter (from app)
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasConsentParam = urlParams.get('consent') === 'chat';
+        const isAppUserAgent = navigator.userAgent.includes('AtlasLogged/');
+
+        // If coming from app (URL param or user agent), ALWAYS auto-open
+        if (hasConsentParam || isAppUserAgent) {
             saveConsentStatus('accepted');
-            loadChatwoot();
+            loadChatwoot(true); // ALWAYS auto-open when from app
             return;
         }
 
-        // Check existing consent status
+        // Regular website visitor flow
         const consentStatus = getConsentStatus();
 
         if (consentStatus === 'accepted') {
-            // User previously accepted, load Chatwoot
-            loadChatwoot();
+            // User previously accepted, load Chatwoot (don't auto-open)
+            loadChatwoot(false);
         } else if (consentStatus === 'rejected') {
             // User previously rejected, don't show banner or load Chatwoot
             // They can manually change this by clearing localStorage
