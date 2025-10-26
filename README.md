@@ -12,7 +12,10 @@ Modern, animated landing page for atlaslogged.com built with vanilla HTML, CSS, 
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
 - **Privacy-Focused Content**: Highlights the app's privacy-first approach
 - **Interactive FAQ**: Accordion-style FAQ section
-- **Chatwoot Integration**: Live chat support widget (requires configuration)
+- **Chatwoot Integration**: Live chat support widget with GDPR-compliant cookie consent
+  - Cookie consent banner for website visitors
+  - Automatic consent for iOS app users via URL parameter
+  - Session persistence with localStorage
 - **Fast Performance**: No build step, lightweight, SEO-friendly
 - **Accessibility**: WCAG compliant with screen reader support
 
@@ -21,18 +24,24 @@ Modern, animated landing page for atlaslogged.com built with vanilla HTML, CSS, 
 ```
 website/
 ├── index.html                      # Main landing page
+├── privacy.html                    # Privacy policy page
+├── location-faq.html               # Location tracking FAQ
+├── changelog.html                  # Release notes and version history
+├── roadmap.html                    # Product roadmap
 ├── css/
 │   ├── style.css                  # Custom styles and animations
 │   └── liquid-glass.css           # Liquid glass effect styles
 ├── js/
 │   ├── main.js                    # Interactive elements and GSAP animations
+│   ├── cookie-consent.js          # GDPR-compliant cookie consent for Chatwoot
+│   ├── feature-flags.js           # Feature flag management
 │   ├── liquid-glass-container.js  # WebGL container for liquid glass
 │   ├── liquid-glass-button.js     # Glass button component
 │   └── liquid-glass-controls.js   # Settings and controls for liquid glass
 ├── assets/
 │   ├── logo.png                   # App logo (1024x1024)
 │   ├── app-store-badge.svg        # App Store download badge
-│   └── screenshots/               # iOS app screenshots (to be added)
+│   └── screenshots/               # iOS app screenshots
 ├── CNAME                          # Custom domain configuration
 └── README.md                      # This file
 ```
@@ -56,19 +65,52 @@ npx http-server .
 
 ### 2. Chatwoot Configuration
 
-To enable the Chatwoot live chat widget:
+The Chatwoot live chat widget is **already configured** and includes GDPR-compliant cookie consent management.
 
-1. Sign up for Chatwoot at https://www.chatwoot.com/
-2. Create a website inbox and get your credentials
-3. In `index.html`, find the Chatwoot script section (near the bottom)
-4. Uncomment the code and replace:
-   - `YOUR_CHATWOOT_URL` with your Chatwoot instance URL
-   - `YOUR_WEBSITE_TOKEN` with your website token
+**How it works:**
+
+1. **Website Visitors**: See a cookie consent banner on first visit
+   - Must accept/reject before Chatwoot loads
+   - Choice stored in localStorage
+   - Banner doesn't show again after decision
+
+2. **iOS App Users**: Automatically consent via URL parameter
+   - App passes `?consent=chat` parameter
+   - No banner shown (clicking "Chat with Us" = consent)
+   - Widget auto-opens immediately
+
+**Configuration:**
+
+The Chatwoot widget is configured in `js/cookie-consent.js`:
 
 ```javascript
-// Example configuration
-var BASE_URL="https://app.chatwoot.com";
-websiteToken: 'your-token-here',
+const CHATWOOT_CONFIG = {
+    baseUrl: 'https://app.chatwoot.com',
+    websiteToken: 'xiyWsj719fc5BZUsg8i4n88i'
+};
+```
+
+**URL Parameters:**
+
+- `?consent=chat` - Auto-accept cookies and open chat (used by iOS app)
+- Regular visit - Show cookie banner if no previous decision
+
+**GDPR Compliance:**
+
+- ✅ Explicit opt-in required for website visitors
+- ✅ App users consent by clicking "Chat with Us" button
+- ✅ Privacy policy link displayed before action
+- ✅ Granular control with accept/reject options
+- ✅ Session persistence via cookies (with consent)
+
+**Testing:**
+
+```bash
+# Test website visitor flow (shows banner)
+open https://atlaslogged.com
+
+# Test app user flow (auto-opens, no banner)
+open "https://atlaslogged.com?consent=chat"
 ```
 
 ### 3. Add App Store Link
@@ -155,6 +197,81 @@ Customize animations in `js/main.js`:
 - Adjust GSAP animation timing
 - Modify scroll trigger thresholds
 - Change easing functions
+
+## Cookie Consent & GDPR Compliance
+
+### Implementation Details
+
+The website uses a custom cookie consent system (`js/cookie-consent.js`) that handles GDPR-compliant consent for the Chatwoot live chat widget.
+
+**Key Features:**
+
+- **Smart Detection**: Automatically detects if user is coming from the iOS app
+- **URL-Based Consent**: `?consent=chat` parameter grants automatic consent
+- **User Agent Detection**: Recognizes `AtlasLogged/` user agent from iOS app
+- **localStorage Persistence**: Remembers user's consent choice
+- **Auto-Open Logic**: Opens chat widget automatically when coming from app
+
+**Flow Diagram:**
+
+```
+Website Visitor:
+1. Land on atlaslogged.com
+2. See cookie consent banner
+3. Accept/Reject → Choice stored in localStorage
+4. If accepted → Chatwoot loads
+5. Return visits → No banner (choice remembered)
+
+iOS App User:
+1. Click "Chat with Us" in app
+2. See disclaimer: "By using chat, you agree to our privacy policy"
+3. WebView loads: atlaslogged.com?consent=chat
+4. JavaScript detects parameter → Auto-accept cookies
+5. Chatwoot loads and opens automatically
+6. No banner shown (consent via button click)
+```
+
+**Integration with iOS App:**
+
+The iOS app (`ChatWebView.swift`) automatically appends `?consent=chat` to the URL:
+
+```swift
+// iOS App Integration
+var urlWithConsent = url
+if var components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+    var queryItems = components.queryItems ?? []
+    queryItems.append(URLQueryItem(name: "consent", value: "chat"))
+    components.queryItems = queryItems
+    urlWithConsent = components.url ?? url
+}
+```
+
+**Manual Control:**
+
+For debugging/testing, you can manually control consent via browser console:
+
+```javascript
+// Check consent status
+ChatwootConsent.getStatus()
+
+// Manually accept
+ChatwootConsent.accept()
+
+// Manually reject
+ChatwootConsent.reject()
+
+// Reset consent (shows banner again)
+ChatwootConsent.reset()
+```
+
+**Privacy Policy Integration:**
+
+The privacy policy (`privacy.html`) includes a comprehensive "Customer Support & Live Chat" section explaining:
+- Cookie usage for session persistence
+- Anonymous chat option (no email required)
+- What data is collected by Chatwoot
+- GDPR compliance measures
+- Link to Chatwoot's privacy policy
 
 ## Technologies Used
 
