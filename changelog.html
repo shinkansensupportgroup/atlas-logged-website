@@ -74,21 +74,37 @@
 
         .version-title-row {
             display: flex;
-            align-items: center;
-            gap: 1rem;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1.5rem;
             padding: 1.25rem 1.5rem;
             border-bottom: 1px solid #e2e8f0;
+        }
+
+        .version-meta-left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .version-badges {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
         }
 
         .version-number-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
             background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
             color: white;
-            padding: 0.4rem 0.9rem;
-            border-radius: 1.5rem;
-            font-size: 0.9375rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 1.25rem;
+            font-size: 0.8125rem;
             font-weight: 700;
             white-space: nowrap;
             flex-shrink: 0;
@@ -106,29 +122,26 @@
 
         .coming-soon-badge {
             background: rgba(255, 255, 255, 0.25);
-            padding: 0.2rem 0.6rem;
-            border-radius: 0.75rem;
-            font-size: 0.65rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.625rem;
+            font-size: 0.625rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
 
         .version-date {
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             color: #64748b;
             white-space: nowrap;
-            flex-shrink: 0;
         }
 
         .version-headline {
-            font-size: 1.125rem;
+            font-size: 1.5rem;
             font-weight: 600;
             color: #1e293b;
             margin: 0;
             line-height: 1.3;
-            flex: 1;
-            min-width: 0;
         }
 
         .expand-icon {
@@ -137,7 +150,7 @@
             color: #64748b;
             transition: transform 0.3s ease;
             flex-shrink: 0;
-            margin-left: auto;
+            margin-top: 0.25rem;
         }
 
         .version-section.expanded .expand-icon {
@@ -183,7 +196,7 @@
             overflow: hidden;
             background: #1e293b;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            max-width: 600px;
+            max-width: 400px;
             width: 100%;
         }
 
@@ -287,19 +300,11 @@
         /* Mobile responsive */
         @media (max-width: 768px) {
             .version-title-row {
-                flex-wrap: wrap;
                 padding: 1rem;
             }
 
             .version-headline {
-                font-size: 1rem;
-                flex-basis: 100%;
-                order: 3;
-                margin-top: 0.5rem;
-            }
-
-            .expand-icon {
-                order: 4;
+                font-size: 1.25rem;
             }
 
             .version-summary-row {
@@ -317,6 +322,10 @@
 
             .details-video {
                 padding: 0;
+            }
+
+            .video-container {
+                max-width: 100%;
             }
         }
     </style>
@@ -398,12 +407,16 @@
     <section class="version-section coming-soon" id="v1.2.0" data-version="1.2.0">
         <div class="version-header" onclick="toggleVersion('1.2.0')">
             <div class="version-title-row">
-                <div class="version-number-badge upcoming">
-                    <span>v1.2.0</span>
-                    <span class="coming-soon-badge">Coming Soon</span>
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge upcoming">
+                            <span>v1.2.0</span>
+                            <span class="coming-soon-badge">Coming Soon</span>
+                        </div>
+                        <div class="version-date">Est. March 11, 2026</div>
+                    </div>
+                    <h2 class="version-headline">Introducing Unified Onboarding & Smart Update System</h2>
                 </div>
-                <div class="version-date">Est. March 11, 2026</div>
-                <h2 class="version-headline">Introducing Unified Onboarding & Smart Update System</h2>
                 <svg class="expand-icon">
                     <use href="#icon-chevron-down"></use>
                 </svg>
@@ -528,12 +541,16 @@
     <section class="version-section " id="v1.1.18" data-version="1.1.18">
         <div class="version-header" onclick="toggleVersion('1.1.18')">
             <div class="version-title-row">
-                <div class="version-number-badge ">
-                    <span>v1.1.18</span>
-                    
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.18</span>
+                            
+                        </div>
+                        <div class="version-date">February 12, 2025</div>
+                    </div>
+                    <h2 class="version-headline">Minor Changes and Fixes</h2>
                 </div>
-                <div class="version-date">February 12, 2025</div>
-                <h2 class="version-headline">Minor Changes and Fixes</h2>
                 <svg class="expand-icon">
                     <use href="#icon-chevron-down"></use>
                 </svg>
@@ -615,12 +632,16 @@
     <section class="version-section " id="v1.1.17" data-version="1.1.17">
         <div class="version-header" onclick="toggleVersion('1.1.17')">
             <div class="version-title-row">
-                <div class="version-number-badge ">
-                    <span>v1.1.17</span>
-                    
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.17</span>
+                            
+                        </div>
+                        <div class="version-date">February 11, 2025</div>
+                    </div>
+                    <h2 class="version-headline">New Features</h2>
                 </div>
-                <div class="version-date">February 11, 2025</div>
-                <h2 class="version-headline">New Features</h2>
                 <svg class="expand-icon">
                     <use href="#icon-chevron-down"></use>
                 </svg>
@@ -746,12 +767,16 @@
     <section class="version-section " id="v1.1.16" data-version="1.1.16">
         <div class="version-header" onclick="toggleVersion('1.1.16')">
             <div class="version-title-row">
-                <div class="version-number-badge ">
-                    <span>v1.1.16</span>
-                    
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.16</span>
+                            
+                        </div>
+                        <div class="version-date">February 3, 2025</div>
+                    </div>
+                    <h2 class="version-headline">New sharing feature :)</h2>
                 </div>
-                <div class="version-date">February 3, 2025</div>
-                <h2 class="version-headline">New sharing feature :)</h2>
                 <svg class="expand-icon">
                     <use href="#icon-chevron-down"></use>
                 </svg>
@@ -797,12 +822,16 @@
     <section class="version-section " id="v1.1.15" data-version="1.1.15">
         <div class="version-header" onclick="toggleVersion('1.1.15')">
             <div class="version-title-row">
-                <div class="version-number-badge ">
-                    <span>v1.1.15</span>
-                    
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.15</span>
+                            
+                        </div>
+                        <div class="version-date">February 1, 2025</div>
+                    </div>
+                    <h2 class="version-headline">hola! :) added Spanish localisation</h2>
                 </div>
-                <div class="version-date">February 1, 2025</div>
-                <h2 class="version-headline">hola! :) added Spanish localisation</h2>
                 <svg class="expand-icon">
                     <use href="#icon-chevron-down"></use>
                 </svg>
@@ -848,12 +877,16 @@
     <section class="version-section " id="v1.1.14" data-version="1.1.14">
         <div class="version-header" onclick="toggleVersion('1.1.14')">
             <div class="version-title-row">
-                <div class="version-number-badge ">
-                    <span>v1.1.14</span>
-                    
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.14</span>
+                            
+                        </div>
+                        <div class="version-date">January 28, 2025</div>
+                    </div>
+                    <h2 class="version-headline">minor bug fixes</h2>
                 </div>
-                <div class="version-date">January 28, 2025</div>
-                <h2 class="version-headline">minor bug fixes</h2>
                 <svg class="expand-icon">
                     <use href="#icon-chevron-down"></use>
                 </svg>
@@ -899,12 +932,16 @@
     <section class="version-section " id="v1.1.13" data-version="1.1.13">
         <div class="version-header" onclick="toggleVersion('1.1.13')">
             <div class="version-title-row">
-                <div class="version-number-badge ">
-                    <span>v1.1.13</span>
-                    
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.13</span>
+                            
+                        </div>
+                        <div class="version-date">January 25, 2025</div>
+                    </div>
+                    <h2 class="version-headline">minor bug fixes</h2>
                 </div>
-                <div class="version-date">January 25, 2025</div>
-                <h2 class="version-headline">minor bug fixes</h2>
                 <svg class="expand-icon">
                     <use href="#icon-chevron-down"></use>
                 </svg>
@@ -950,12 +987,16 @@
     <section class="version-section " id="v1.1.12" data-version="1.1.12">
         <div class="version-header" onclick="toggleVersion('1.1.12')">
             <div class="version-title-row">
-                <div class="version-number-badge ">
-                    <span>v1.1.12</span>
-                    
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.12</span>
+                            
+                        </div>
+                        <div class="version-date">January 22, 2025</div>
+                    </div>
+                    <h2 class="version-headline">New Country Stays and Statistics views in the History tab + some general UI and stability updates :)</h2>
                 </div>
-                <div class="version-date">January 22, 2025</div>
-                <h2 class="version-headline">New Country Stays and Statistics views in the History tab + some general UI and stability updates :)</h2>
                 <svg class="expand-icon">
                     <use href="#icon-chevron-down"></use>
                 </svg>
@@ -1037,12 +1078,16 @@
     <section class="version-section " id="v1.1.11" data-version="1.1.11">
         <div class="version-header" onclick="toggleVersion('1.1.11')">
             <div class="version-title-row">
-                <div class="version-number-badge ">
-                    <span>v1.1.11</span>
-                    
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.11</span>
+                            
+                        </div>
+                        <div class="version-date">December 15, 2024</div>
+                    </div>
+                    <h2 class="version-headline">Performance improvements and bug fixes and a new Country Stays screen showing a timeline of your travels.</h2>
                 </div>
-                <div class="version-date">December 15, 2024</div>
-                <h2 class="version-headline">Performance improvements and bug fixes and a new Country Stays screen showing a timeline of your travels.</h2>
                 <svg class="expand-icon">
                     <use href="#icon-chevron-down"></use>
                 </svg>
@@ -1128,12 +1173,16 @@
     <section class="version-section " id="v1.1.1" data-version="1.1.1">
         <div class="version-header" onclick="toggleVersion('1.1.1')">
             <div class="version-title-row">
-                <div class="version-number-badge ">
-                    <span>v1.1.1</span>
-                    
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.1</span>
+                            
+                        </div>
+                        <div class="version-date">November 15, 2024</div>
+                    </div>
+                    <h2 class="version-headline">Bug fixes and performance improvements</h2>
                 </div>
-                <div class="version-date">November 15, 2024</div>
-                <h2 class="version-headline">Bug fixes and performance improvements</h2>
                 <svg class="expand-icon">
                     <use href="#icon-chevron-down"></use>
                 </svg>
@@ -1199,12 +1248,16 @@
     <section class="version-section " id="v1.1" data-version="1.1">
         <div class="version-header" onclick="toggleVersion('1.1')">
             <div class="version-title-row">
-                <div class="version-number-badge ">
-                    <span>v1.1</span>
-                    
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1</span>
+                            
+                        </div>
+                        <div class="version-date">November 1, 2024</div>
+                    </div>
+                    <h2 class="version-headline">Bug fixes, performance improvements and a clearer UI for adding new logs.</h2>
                 </div>
-                <div class="version-date">November 1, 2024</div>
-                <h2 class="version-headline">Bug fixes, performance improvements and a clearer UI for adding new logs.</h2>
                 <svg class="expand-icon">
                     <use href="#icon-chevron-down"></use>
                 </svg>
@@ -1278,12 +1331,16 @@
     <section class="version-section " id="v1.0" data-version="1.0">
         <div class="version-header" onclick="toggleVersion('1.0')">
             <div class="version-title-row">
-                <div class="version-number-badge ">
-                    <span>v1.0</span>
-                    
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.0</span>
+                            
+                        </div>
+                        <div class="version-date">October 1, 2024</div>
+                    </div>
+                    <h2 class="version-headline">Initial Release</h2>
                 </div>
-                <div class="version-date">October 1, 2024</div>
-                <h2 class="version-headline">Initial Release</h2>
                 <svg class="expand-icon">
                     <use href="#icon-chevron-down"></use>
                 </svg>
