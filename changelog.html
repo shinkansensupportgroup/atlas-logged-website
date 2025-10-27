@@ -44,6 +44,12 @@
 
     <style>
         /* Changelog-specific styles */
+
+        /* Override container max-width for changelog */
+        .privacy .container {
+            max-width: 1400px;
+        }
+
         .version-section {
             margin-bottom: 1.5rem;
             border: 1px solid #e2e8f0;
@@ -207,7 +213,7 @@
         /* Desktop: side-by-side layout */
         @media (min-width: 1200px) {
             .details-content {
-                grid-template-columns: 1fr 400px;
+                grid-template-columns: 1fr 480px;
                 gap: 3rem;
                 align-items: start;
             }
