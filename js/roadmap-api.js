@@ -159,9 +159,14 @@ function createFeatureCard(feature, columnId) {
 
     const emoji = EMOJI_MAP[feature.title] || '✨';
     const isFrozen = feature.status === 'In Progress' || feature.status === 'Completed';
+    const submittedFeatures = getSubmittedFeatures();
+    const isYourSubmission = submittedFeatures.includes(feature.id);
 
     card.innerHTML = `
-        <h4>${emoji} ${feature.title}</h4>
+        <h4>
+            ${emoji} ${feature.title}
+            ${isYourSubmission ? '<span class="submission-badge">Your submission</span>' : ''}
+        </h4>
         <p>${feature.description}</p>
         <div class="vote-section">
             <button class="vote-button ${isFrozen ? 'frozen' : ''}"
@@ -272,6 +277,15 @@ function getVotedFeatures() {
 
 function saveVotedFeatures(votedArray) {
     localStorage.setItem('atlas_voted_features', JSON.stringify(votedArray));
+}
+
+function getSubmittedFeatures() {
+    const submitted = localStorage.getItem('atlas_submitted_features');
+    return submitted ? JSON.parse(submitted) : [];
+}
+
+function saveSubmittedFeatures(submittedArray) {
+    localStorage.setItem('atlas_submitted_features', JSON.stringify(submittedArray));
 }
 
 function restoreVotedState() {
@@ -426,7 +440,13 @@ async function submitFeature(title, description, email) {
 
         if (result.success) {
             console.log('Feature submitted:', result.data);
-            // Reload features to show new submission
+
+            // Save submission to localStorage
+            const submittedFeatures = getSubmittedFeatures();
+            submittedFeatures.push(result.data.id);
+            saveSubmittedFeatures(submittedFeatures);
+
+            // Reload features to show new submission with badge
             setTimeout(() => loadRoadmapFeatures(), 1000);
             return true;
         } else {
