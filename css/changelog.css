@@ -193,10 +193,11 @@
         display: flex;
         justify-content: center;
         align-items: flex-start;
+        width: 100%;
     }
 
     .video-container {
-        max-width: 100%;
+        max-width: 300px;
         width: auto;
     }
 }
