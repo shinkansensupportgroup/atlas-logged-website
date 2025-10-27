@@ -293,69 +293,114 @@ function restoreVotedState() {
 // ========================================
 
 async function voteForFeature(featureId, button) {
-    // Ignore frozen buttons
-    if (button.disabled || button.classList.contains('frozen')) {
+    // Ignore frozen or loading buttons
+    if (button.disabled || button.classList.contains('frozen') || button.classList.contains('loading')) {
         return;
     }
 
     const votedFeatures = getVotedFeatures();
     const isVoted = button.classList.contains('voted');
+    const voteCount = button.parentElement.querySelector('.vote-count');
 
+    // Store original state for rollback
+    const originalButtonHTML = button.innerHTML;
+    const originalButtonClasses = button.className;
+    const originalVoteText = voteCount ? voteCount.textContent : '';
+    const originalVoteNumber = originalVoteText ? parseInt(originalVoteText) : 0;
+
+    // OPTIMISTIC UPDATE - Update UI immediately
+    button.classList.add('loading');
+    button.disabled = true;
+
+    if (isVoted) {
+        // Optimistic unvote
+        button.classList.remove('voted');
+        button.innerHTML = '⬆️ Vote <span style="display:inline-block;animation:spin 0.6s linear infinite;margin-left:4px;">⏳</span>';
+
+        if (voteCount) {
+            voteCount.textContent = Math.max(0, originalVoteNumber - 1) + ' votes';
+        }
+
+        // Update localStorage immediately
+        const index = votedFeatures.indexOf(featureId);
+        if (index > -1) {
+            votedFeatures.splice(index, 1);
+            saveVotedFeatures(votedFeatures);
+        }
+    } else {
+        // Optimistic vote
+        button.classList.add('voted');
+        button.innerHTML = '✅ Voted <span style="display:inline-block;animation:spin 0.6s linear infinite;margin-left:4px;">⏳</span>';
+
+        if (voteCount) {
+            voteCount.textContent = (originalVoteNumber + 1) + ' votes';
+        }
+
+        // Update localStorage immediately
+        votedFeatures.push(featureId);
+        saveVotedFeatures(votedFeatures);
+    }
+
+    // Make API call in background
     try {
-        if (isVoted) {
-            // UNVOTE - Remove vote
-            const response = await fetch(`${API_URL}?action=unvote&id=${featureId}&userAgent=${navigator.userAgent}&ipAddress=unknown`);
-            const result = await response.json();
+        const action = isVoted ? 'unvote' : 'vote';
+        const response = await fetch(`${API_URL}?action=${action}&id=${featureId}&userAgent=${navigator.userAgent}&ipAddress=unknown`);
+        const result = await response.json();
 
-            if (result.success) {
-                // Remove from localStorage
-                const index = votedFeatures.indexOf(featureId);
-                if (index > -1) {
-                    votedFeatures.splice(index, 1);
-                    saveVotedFeatures(votedFeatures);
-                }
-
-                // Update button
-                button.classList.remove('voted');
-                button.innerHTML = '⬆️ Vote';
-
-                // Update vote count
-                const voteCount = button.parentElement.querySelector('.vote-count');
-                if (voteCount) {
-                    voteCount.textContent = result.data.newVotes + ' votes';
-                }
-
-                console.log('Vote removed:', result.data);
-            } else {
-                alert(result.message);
+        if (result.success) {
+            // Update with real vote count from server
+            if (voteCount) {
+                voteCount.textContent = result.data.newVotes + ' votes';
             }
+
+            // Remove loading state
+            button.classList.remove('loading');
+            button.disabled = false;
+            button.innerHTML = isVoted ? '⬆️ Vote' : '✅ Voted';
+
+            console.log(isVoted ? 'Vote removed:' : 'Vote recorded:', result.data);
         } else {
-            // VOTE - Add vote
-            const response = await fetch(`${API_URL}?action=vote&id=${featureId}&userAgent=${navigator.userAgent}&ipAddress=unknown`);
-            const result = await response.json();
+            // ROLLBACK on error
+            button.innerHTML = originalButtonHTML;
+            button.className = originalButtonClasses;
+            button.disabled = false;
 
-            if (result.success) {
-                // Update localStorage
-                votedFeatures.push(featureId);
-                saveVotedFeatures(votedFeatures);
-
-                // Update button
-                button.classList.add('voted');
-                button.innerHTML = '✅ Voted';
-
-                // Update vote count
-                const voteCount = button.parentElement.querySelector('.vote-count');
-                if (voteCount) {
-                    voteCount.textContent = result.data.newVotes + ' votes';
-                }
-
-                console.log('Vote recorded:', result.data);
-            } else {
-                alert(result.message);
+            if (voteCount) {
+                voteCount.textContent = originalVoteText;
             }
+
+            // Restore localStorage
+            if (isVoted) {
+                votedFeatures.push(featureId);
+            } else {
+                const index = votedFeatures.indexOf(featureId);
+                if (index > -1) votedFeatures.splice(index, 1);
+            }
+            saveVotedFeatures(votedFeatures);
+
+            alert(result.message);
         }
     } catch (error) {
+        // ROLLBACK on error
         console.error('Error voting:', error);
+
+        button.innerHTML = originalButtonHTML;
+        button.className = originalButtonClasses;
+        button.disabled = false;
+
+        if (voteCount) {
+            voteCount.textContent = originalVoteText;
+        }
+
+        // Restore localStorage
+        if (isVoted) {
+            votedFeatures.push(featureId);
+        } else {
+            const index = votedFeatures.indexOf(featureId);
+            if (index > -1) votedFeatures.splice(index, 1);
+        }
+        saveVotedFeatures(votedFeatures);
+
         alert('Voting failed. Please try again.');
     }
 }
