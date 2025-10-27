@@ -262,6 +262,33 @@ function renderDeliveredTimeline(completedFeatures) {
 }
 
 // ========================================
+// LOCALSTORAGE HELPERS FOR VOTE PERSISTENCE
+// ========================================
+
+function getVotedFeatures() {
+    const voted = localStorage.getItem('atlas_voted_features');
+    return voted ? JSON.parse(voted) : [];
+}
+
+function saveVotedFeatures(votedArray) {
+    localStorage.setItem('atlas_voted_features', JSON.stringify(votedArray));
+}
+
+function restoreVotedState() {
+    const votedFeatures = getVotedFeatures();
+    document.querySelectorAll('.vote-button:not(.frozen)').forEach(button => {
+        const card = button.closest('.feature-card');
+        if (!card) return;
+
+        const featureId = parseInt(card.dataset.featureId);
+        if (votedFeatures.includes(featureId)) {
+            button.classList.add('voted');
+            button.innerHTML = '✅ Voted';
+        }
+    });
+}
+
+// ========================================
 // VOTE FOR FEATURE (REAL API CALL)
 // ========================================
 
