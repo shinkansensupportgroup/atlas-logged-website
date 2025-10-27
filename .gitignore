@@ -1,0 +1,16 @@
+# Apps Script
+apps-script/.clasp.json
+
+# Node.js
+node_modules/
+package-lock.json
+
+# Editor
+.DS_Store
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local

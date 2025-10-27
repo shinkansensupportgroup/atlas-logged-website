@@ -1,8 +1,22 @@
 # How to Update Apps Script
 
-After making changes to `Code.gs`, you need to update your deployed Apps Script:
+After making changes to `Code.gs`, you need to update your deployed Apps Script.
 
-## Steps:
+## Option 1: Automated with Clasp (Recommended)
+
+If you've set up clasp (see [CLASP-SETUP.md](./CLASP-SETUP.md)):
+
+```bash
+cd apps-script
+clasp push
+clasp deploy --description "Your update description"
+```
+
+Done! ✅
+
+## Option 2: Manual Deployment
+
+If you haven't set up clasp yet, follow these steps:
 
 1. **Open your Apps Script:**
    - Go to https://script.google.com

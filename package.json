@@ -1,0 +1,23 @@
+{
+  "name": "atlas-logged-website",
+  "version": "1.0.0",
+  "description": "Atlas Logged landing page and roadmap",
+  "private": true,
+  "scripts": {
+    "apps-script:push": "cd apps-script && clasp push",
+    "apps-script:pull": "cd apps-script && clasp pull",
+    "apps-script:deploy": "cd apps-script && clasp deploy",
+    "apps-script:info": "cd apps-script && clasp deployments",
+    "dev": "python3 -m http.server 8000"
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.4.2"
+  },
+  "keywords": [
+    "atlas-logged",
+    "location-tracking",
+    "roadmap"
+  ],
+  "author": "Atlas Logged Team",
+  "license": "UNLICENSED"
+}
