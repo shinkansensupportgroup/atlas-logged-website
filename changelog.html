@@ -178,17 +178,21 @@
         }
 
         .details-content {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 1fr;
             gap: 2rem;
             padding: 2rem;
             background: white;
         }
 
+        .details-text {
+            min-width: 0;
+        }
+
         .details-video {
             display: flex;
             justify-content: center;
-            padding: 0 2rem;
+            padding: 0;
         }
 
         .video-container {
@@ -198,6 +202,25 @@
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
             max-width: 550px;
             width: 100%;
+        }
+
+        /* Desktop: side-by-side layout */
+        @media (min-width: 1200px) {
+            .details-content {
+                grid-template-columns: 1fr 400px;
+                gap: 3rem;
+                align-items: start;
+            }
+
+            .details-video {
+                position: sticky;
+                top: 2rem;
+                justify-content: flex-start;
+            }
+
+            .video-container {
+                max-width: 100%;
+            }
         }
 
         .changelog-video {
@@ -295,6 +318,18 @@
             color: #64748b;
             line-height: 1.5;
             margin: 0;
+        }
+
+        /* Tablet and below: stack vertically */
+        @media (max-width: 1199px) {
+            .details-content {
+                grid-template-columns: 1fr;
+            }
+
+            .details-video {
+                order: -1; /* Video appears first on mobile/tablet */
+                padding: 0 1rem;
+            }
         }
 
         /* Mobile responsive */
@@ -429,23 +464,9 @@
 
         <div class="version-details">
             <div class="details-content">
+                <div class="details-text">
 
-                <div class="details-video">
-                    <div class="video-container">
-                        <video
-                            controls
-                            preload="metadata"
-                            poster="https://github.com/shinkansensupportgroup/atlas-logged-website/releases/download/v1.2.0/v1.2.0-thumb.jpg"
-                            class="changelog-video"
-                        >
-                            <source src="https://github.com/shinkansensupportgroup/atlas-logged-website/releases/download/v1.2.0/v1.2.0.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                        <p class="video-size-note">1.4MB • 26s</p>
-                    </div>
-                </div>
-
-                <div class="features-list">
+                    <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title new">
@@ -531,6 +552,23 @@
                             </div>
                         </div>
 
+                    </div>
+
+                </div>
+
+                <div class="details-video">
+                    <div class="video-container">
+                        <video
+                            controls
+                            preload="metadata"
+                            poster="https://github.com/shinkansensupportgroup/atlas-logged-website/releases/download/v1.2.0/v1.2.0-thumb.jpg"
+                            class="changelog-video"
+                        >
+                            <source src="https://github.com/shinkansensupportgroup/atlas-logged-website/releases/download/v1.2.0/v1.2.0.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <p class="video-size-note">1.4MB • 26s</p>
+                    </div>
                 </div>
 
             </div>
@@ -563,8 +601,9 @@
 
         <div class="version-details">
             <div class="details-content">
+                <div class="details-text">
 
-                <div class="features-list">
+                    <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title improved">
@@ -622,6 +661,8 @@
                             </div>
                         </div>
 
+                    </div>
+
                 </div>
 
             </div>
@@ -654,8 +695,9 @@
 
         <div class="version-details">
             <div class="details-content">
+                <div class="details-text">
 
-                <div class="features-list">
+                    <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title new">
@@ -757,6 +799,8 @@
                             </div>
                         </div>
 
+                    </div>
+
                 </div>
 
             </div>
@@ -789,8 +833,9 @@
 
         <div class="version-details">
             <div class="details-content">
+                <div class="details-text">
 
-                <div class="features-list">
+                    <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title new">
@@ -811,6 +856,8 @@
 
                             </div>
                         </div>
+
+                    </div>
 
                 </div>
 
@@ -844,8 +891,9 @@
 
         <div class="version-details">
             <div class="details-content">
+                <div class="details-text">
 
-                <div class="features-list">
+                    <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title new">
@@ -866,6 +914,8 @@
 
                             </div>
                         </div>
+
+                    </div>
 
                 </div>
 
@@ -899,8 +949,9 @@
 
         <div class="version-details">
             <div class="details-content">
+                <div class="details-text">
 
-                <div class="features-list">
+                    <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title fixed">
@@ -921,6 +972,8 @@
 
                             </div>
                         </div>
+
+                    </div>
 
                 </div>
 
@@ -954,8 +1007,9 @@
 
         <div class="version-details">
             <div class="details-content">
+                <div class="details-text">
 
-                <div class="features-list">
+                    <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title fixed">
@@ -976,6 +1030,8 @@
 
                             </div>
                         </div>
+
+                    </div>
 
                 </div>
 
@@ -1009,8 +1065,9 @@
 
         <div class="version-details">
             <div class="details-content">
+                <div class="details-text">
 
-                <div class="features-list">
+                    <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title new">
@@ -1068,6 +1125,8 @@
                             </div>
                         </div>
 
+                    </div>
+
                 </div>
 
             </div>
@@ -1100,8 +1159,9 @@
 
         <div class="version-details">
             <div class="details-content">
+                <div class="details-text">
 
-                <div class="features-list">
+                    <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title new">
@@ -1163,6 +1223,8 @@
                             </div>
                         </div>
 
+                    </div>
+
                 </div>
 
             </div>
@@ -1195,8 +1257,9 @@
 
         <div class="version-details">
             <div class="details-content">
+                <div class="details-text">
 
-                <div class="features-list">
+                    <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title improved">
@@ -1238,6 +1301,8 @@
                             </div>
                         </div>
 
+                    </div>
+
                 </div>
 
             </div>
@@ -1270,8 +1335,9 @@
 
         <div class="version-details">
             <div class="details-content">
+                <div class="details-text">
 
-                <div class="features-list">
+                    <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title improved">
@@ -1321,6 +1387,8 @@
                             </div>
                         </div>
 
+                    </div>
+
                 </div>
 
             </div>
@@ -1353,8 +1421,9 @@
 
         <div class="version-details">
             <div class="details-content">
+                <div class="details-text">
 
-                <div class="features-list">
+                    <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title new">
@@ -1391,6 +1460,8 @@
 
                             </div>
                         </div>
+
+                    </div>
 
                 </div>
 
