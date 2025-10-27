@@ -34,9 +34,16 @@ Atlas Logged is a mobile application for iOS that provides automatic location tr
 Atlas Logged is ideal for travelers, digital nomads, frequent business travelers, and anyone who wants to maintain a private record of places they've visited. The app emphasizes user privacy and data ownership over cloud-based tracking solutions.
 
 
+
+
+
+
+
+
+
 # Version History
 
-## Version 1.2.0 - 2025-03-15
+## Version 1.2.0 - 2026-03-11
 Introducing Unified Onboarding & Smart Update System
 
 ### New Features
