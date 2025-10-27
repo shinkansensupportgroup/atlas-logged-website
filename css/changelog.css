@@ -190,15 +190,11 @@
     .details-video {
         position: sticky;
         top: 2rem;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        width: 100%;
     }
 
     .video-container {
-        max-width: 300px;
-        width: auto;
+        max-width: 280px;
+        margin: 0 auto;
     }
 }
 
