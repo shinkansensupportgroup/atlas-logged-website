@@ -115,20 +115,13 @@ function setupSheet() {
 // API ENDPOINTS
 // ========================================
 
-// Handle CORS preflight requests
-function doOptions(e) {
-  return ContentService
-    .createTextOutput('')
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader('Access-Control-Allow-Origin', '*')
-    .setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    .setHeader('Access-Control-Allow-Headers', 'Content-Type')
-    .setHeader('Access-Control-Max-Age', '86400');
-}
+// NOTE: CORS is handled automatically by Apps Script when deployed with "Anyone" access
+// No need to manually set headers - Apps Script does this for us!
 
 function doPost(e) {
   try {
-    const data = JSON.parse(e.postData.contents);
+    // Accept form-encoded data to avoid CORS preflight issues
+    const data = e.parameter;
 
     if (!data.title || !data.description) {
       return createResponse(false, 'Title and description are required');
@@ -197,10 +190,7 @@ function doGet(e) {
       Logger.log('Returning cached feature list');
       return ContentService
         .createTextOutput(cachedData)
-        .setMimeType(ContentService.MimeType.JSON)
-        .setHeader('Access-Control-Allow-Origin', '*')
-        .setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        .setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        .setMimeType(ContentService.MimeType.JSON);
     }
 
     // Cache miss - fetch from sheet
@@ -369,8 +359,5 @@ function createResponse(success, message, data) {
 
   return ContentService
     .createTextOutput(JSON.stringify(response))
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader('Access-Control-Allow-Origin', '*')
-    .setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    .setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    .setMimeType(ContentService.MimeType.JSON);
 }

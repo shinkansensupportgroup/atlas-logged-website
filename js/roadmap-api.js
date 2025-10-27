@@ -339,16 +339,15 @@ async function voteForFeature(featureId, button) {
 
 async function submitFeature(title, description, email) {
     try {
+        // Use form encoding instead of JSON to avoid CORS preflight
+        const formData = new URLSearchParams();
+        formData.append('title', title);
+        formData.append('description', description);
+        formData.append('email', email || 'Anonymous');
+
         const response = await fetch(API_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                title: title,
-                description: description,
-                email: email || 'Anonymous'
-            })
+            body: formData
         });
 
         const result = await response.json();
