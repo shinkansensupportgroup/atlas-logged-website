@@ -63,10 +63,6 @@
         }
 
         .version-header {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            padding: 1.5rem;
             cursor: pointer;
             user-select: none;
             transition: background-color 0.2s;
@@ -76,11 +72,12 @@
             background-color: #f8fafc;
         }
 
-        .version-meta {
+        .version-title-row {
             display: flex;
             align-items: center;
             gap: 1rem;
-            min-width: 180px;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
         }
 
         .version-number-badge {
@@ -89,11 +86,12 @@
             gap: 0.5rem;
             background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
             color: white;
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 0.9rem;
             border-radius: 1.5rem;
-            font-size: 1rem;
+            font-size: 0.9375rem;
             font-weight: 700;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .version-number-badge.upcoming {
@@ -120,44 +118,46 @@
             font-size: 0.875rem;
             color: #64748b;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
-        .version-info {
+        .version-headline {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+            line-height: 1.3;
             flex: 1;
             min-width: 0;
         }
 
-        .version-headline {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin: 0 0 0.5rem 0;
-            line-height: 1.3;
-        }
-
-        .version-summary {
-            font-size: 0.9375rem;
-            color: #64748b;
-            margin: 0;
-            line-height: 1.5;
-        }
-
         .expand-icon {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             color: #64748b;
             transition: transform 0.3s ease;
             flex-shrink: 0;
+            margin-left: auto;
         }
 
         .version-section.expanded .expand-icon {
             transform: rotate(180deg);
         }
 
+        .version-summary-row {
+            padding: 1rem 1.5rem;
+            background: #f8fafc;
+        }
+
+        .version-summary {
+            font-size: 0.9375rem;
+            color: #64748b;
+            margin: 0;
+            line-height: 1.6;
+        }
+
         .version-details {
             display: none;
-            border-top: 1px solid #e2e8f0;
-            background: #f8fafc;
         }
 
         .version-section.expanded .version-details {
@@ -165,24 +165,17 @@
         }
 
         .details-content {
-            display: grid;
-            grid-template-columns: 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 2rem;
             padding: 2rem;
-        }
-
-        .details-content.has-video {
-            grid-template-columns: 1fr 450px;
-        }
-
-        .details-text {
-            min-width: 0;
+            background: white;
         }
 
         .details-video {
-            position: sticky;
-            top: 2rem;
-            align-self: start;
+            display: flex;
+            justify-content: center;
+            padding: 0 2rem;
         }
 
         .video-container {
@@ -190,6 +183,8 @@
             overflow: hidden;
             background: #1e293b;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            max-width: 600px;
+            width: 100%;
         }
 
         .changelog-video {
@@ -290,52 +285,38 @@
         }
 
         /* Mobile responsive */
-        @media (max-width: 1024px) {
-            .details-content.has-video {
-                grid-template-columns: 1fr;
-            }
-
-            .details-video {
-                position: relative;
-                top: 0;
-                order: -1;
-            }
-
-            .video-container {
-                max-width: 500px;
-                margin: 0 auto;
-            }
-        }
-
         @media (max-width: 768px) {
-            .version-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-                padding: 1.25rem;
-            }
-
-            .version-meta {
-                width: 100%;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-                min-width: 0;
-            }
-
-            .expand-icon {
-                position: absolute;
-                top: 1.25rem;
-                right: 1.25rem;
+            .version-title-row {
+                flex-wrap: wrap;
+                padding: 1rem;
             }
 
             .version-headline {
-                font-size: 1.125rem;
+                font-size: 1rem;
+                flex-basis: 100%;
+                order: 3;
+                margin-top: 0.5rem;
+            }
+
+            .expand-icon {
+                order: 4;
+            }
+
+            .version-summary-row {
+                padding: 0.875rem 1rem;
+            }
+
+            .version-summary {
+                font-size: 0.875rem;
             }
 
             .details-content {
                 padding: 1.25rem;
                 gap: 1.5rem;
+            }
+
+            .details-video {
+                padding: 0;
             }
         }
     </style>
@@ -416,27 +397,42 @@
     <!-- Version 1.2.0 (Coming Soon) -->
     <section class="version-section coming-soon" id="v1.2.0" data-version="1.2.0">
         <div class="version-header" onclick="toggleVersion('1.2.0')">
-            <div class="version-meta">
+            <div class="version-title-row">
                 <div class="version-number-badge upcoming">
                     <span>v1.2.0</span>
                     <span class="coming-soon-badge">Coming Soon</span>
                 </div>
                 <div class="version-date">Est. March 11, 2026</div>
-            </div>
-            <div class="version-info">
                 <h2 class="version-headline">Introducing Unified Onboarding & Smart Update System</h2>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
+            </div>
+            
+            <div class="version-summary-row">
                 <p class="version-summary">A complete overhaul of the onboarding experience with context-aware screens, video feature announcements, and intelligent update detection that shows you exactly what's new and what settings to review.</p>
             </div>
-            <svg class="expand-icon">
-                <use href="#icon-chevron-down"></use>
-            </svg>
         </div>
 
         <div class="version-details">
-            <div class="details-content has-video">
-                <div class="details-text">
+            <div class="details-content">
 
-                    <div class="features-list">
+                <div class="details-video">
+                    <div class="video-container">
+                        <video
+                            controls
+                            preload="metadata"
+                            poster="https://github.com/shinkansensupportgroup/atlas-logged-website/releases/download/v1.2.0/v1.2.0-thumb.jpg"
+                            class="changelog-video"
+                        >
+                            <source src="https://github.com/shinkansensupportgroup/atlas-logged-website/releases/download/v1.2.0/v1.2.0.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <p class="video-size-note">1.4MB • 26s</p>
+                    </div>
+                </div>
+
+                <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title new">
@@ -522,23 +518,6 @@
                             </div>
                         </div>
 
-                    </div>
-
-                </div>
-
-                <div class="details-video">
-                    <div class="video-container">
-                        <video
-                            controls
-                            preload="metadata"
-                            poster="https://github.com/shinkansensupportgroup/atlas-logged-website/releases/download/v1.2.0/v1.2.0-thumb.jpg"
-                            class="changelog-video"
-                        >
-                            <source src="https://github.com/shinkansensupportgroup/atlas-logged-website/releases/download/v1.2.0/v1.2.0.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                        <p class="video-size-note">1.4MB • 26s</p>
-                    </div>
                 </div>
 
             </div>
@@ -548,27 +527,27 @@
     <!-- Version 1.1.18  -->
     <section class="version-section " id="v1.1.18" data-version="1.1.18">
         <div class="version-header" onclick="toggleVersion('1.1.18')">
-            <div class="version-meta">
+            <div class="version-title-row">
                 <div class="version-number-badge ">
                     <span>v1.1.18</span>
                     
                 </div>
                 <div class="version-date">February 12, 2025</div>
-            </div>
-            <div class="version-info">
                 <h2 class="version-headline">Minor Changes and Fixes</h2>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
+            </div>
+            
+            <div class="version-summary-row">
                 <p class="version-summary">Performance improvements for the log view and better localization support, along with fixes for donation history display and map rendering.</p>
             </div>
-            <svg class="expand-icon">
-                <use href="#icon-chevron-down"></use>
-            </svg>
         </div>
 
         <div class="version-details">
-            <div class="details-content ">
-                <div class="details-text">
+            <div class="details-content">
 
-                    <div class="features-list">
+                <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title improved">
@@ -626,8 +605,6 @@
                             </div>
                         </div>
 
-                    </div>
-
                 </div>
 
             </div>
@@ -637,27 +614,27 @@
     <!-- Version 1.1.17  -->
     <section class="version-section " id="v1.1.17" data-version="1.1.17">
         <div class="version-header" onclick="toggleVersion('1.1.17')">
-            <div class="version-meta">
+            <div class="version-title-row">
                 <div class="version-number-badge ">
                     <span>v1.1.17</span>
                     
                 </div>
                 <div class="version-date">February 11, 2025</div>
-            </div>
-            <div class="version-info">
                 <h2 class="version-headline">New Features</h2>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
+            </div>
+            
+            <div class="version-summary-row">
                 <p class="version-summary">Future logs now display with visual distinction, plus early access to enhanced log view with TSV export and a brand new map view.</p>
             </div>
-            <svg class="expand-icon">
-                <use href="#icon-chevron-down"></use>
-            </svg>
         </div>
 
         <div class="version-details">
-            <div class="details-content ">
-                <div class="details-text">
+            <div class="details-content">
 
-                    <div class="features-list">
+                <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title new">
@@ -759,8 +736,6 @@
                             </div>
                         </div>
 
-                    </div>
-
                 </div>
 
             </div>
@@ -770,27 +745,27 @@
     <!-- Version 1.1.16  -->
     <section class="version-section " id="v1.1.16" data-version="1.1.16">
         <div class="version-header" onclick="toggleVersion('1.1.16')">
-            <div class="version-meta">
+            <div class="version-title-row">
                 <div class="version-number-badge ">
                     <span>v1.1.16</span>
                     
                 </div>
                 <div class="version-date">February 3, 2025</div>
-            </div>
-            <div class="version-info">
                 <h2 class="version-headline">New sharing feature :)</h2>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
+            </div>
+            
+            <div class="version-summary-row">
                 <p class="version-summary">Share your travel stats and achievements with friends and on social media.</p>
             </div>
-            <svg class="expand-icon">
-                <use href="#icon-chevron-down"></use>
-            </svg>
         </div>
 
         <div class="version-details">
-            <div class="details-content ">
-                <div class="details-text">
+            <div class="details-content">
 
-                    <div class="features-list">
+                <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title new">
@@ -812,8 +787,6 @@
                             </div>
                         </div>
 
-                    </div>
-
                 </div>
 
             </div>
@@ -823,27 +796,27 @@
     <!-- Version 1.1.15  -->
     <section class="version-section " id="v1.1.15" data-version="1.1.15">
         <div class="version-header" onclick="toggleVersion('1.1.15')">
-            <div class="version-meta">
+            <div class="version-title-row">
                 <div class="version-number-badge ">
                     <span>v1.1.15</span>
                     
                 </div>
                 <div class="version-date">February 1, 2025</div>
-            </div>
-            <div class="version-info">
                 <h2 class="version-headline">hola! :) added Spanish localisation</h2>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
+            </div>
+            
+            <div class="version-summary-row">
                 <p class="version-summary">Atlas Logged is now fully available in Spanish with complete language support throughout the app.</p>
             </div>
-            <svg class="expand-icon">
-                <use href="#icon-chevron-down"></use>
-            </svg>
         </div>
 
         <div class="version-details">
-            <div class="details-content ">
-                <div class="details-text">
+            <div class="details-content">
 
-                    <div class="features-list">
+                <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title new">
@@ -865,8 +838,6 @@
                             </div>
                         </div>
 
-                    </div>
-
                 </div>
 
             </div>
@@ -876,27 +847,27 @@
     <!-- Version 1.1.14  -->
     <section class="version-section " id="v1.1.14" data-version="1.1.14">
         <div class="version-header" onclick="toggleVersion('1.1.14')">
-            <div class="version-meta">
+            <div class="version-title-row">
                 <div class="version-number-badge ">
                     <span>v1.1.14</span>
                     
                 </div>
                 <div class="version-date">January 28, 2025</div>
-            </div>
-            <div class="version-info">
                 <h2 class="version-headline">minor bug fixes</h2>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
+            </div>
+            
+            <div class="version-summary-row">
                 <p class="version-summary">Various stability improvements and minor bug fixes to enhance app reliability.</p>
             </div>
-            <svg class="expand-icon">
-                <use href="#icon-chevron-down"></use>
-            </svg>
         </div>
 
         <div class="version-details">
-            <div class="details-content ">
-                <div class="details-text">
+            <div class="details-content">
 
-                    <div class="features-list">
+                <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title fixed">
@@ -917,8 +888,6 @@
 
                             </div>
                         </div>
-
-                    </div>
 
                 </div>
 
@@ -929,27 +898,27 @@
     <!-- Version 1.1.13  -->
     <section class="version-section " id="v1.1.13" data-version="1.1.13">
         <div class="version-header" onclick="toggleVersion('1.1.13')">
-            <div class="version-meta">
+            <div class="version-title-row">
                 <div class="version-number-badge ">
                     <span>v1.1.13</span>
                     
                 </div>
                 <div class="version-date">January 25, 2025</div>
-            </div>
-            <div class="version-info">
                 <h2 class="version-headline">minor bug fixes</h2>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
+            </div>
+            
+            <div class="version-summary-row">
                 <p class="version-summary">Stability improvements and bug fixes for a smoother experience.</p>
             </div>
-            <svg class="expand-icon">
-                <use href="#icon-chevron-down"></use>
-            </svg>
         </div>
 
         <div class="version-details">
-            <div class="details-content ">
-                <div class="details-text">
+            <div class="details-content">
 
-                    <div class="features-list">
+                <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title fixed">
@@ -971,8 +940,6 @@
                             </div>
                         </div>
 
-                    </div>
-
                 </div>
 
             </div>
@@ -982,27 +949,27 @@
     <!-- Version 1.1.12  -->
     <section class="version-section " id="v1.1.12" data-version="1.1.12">
         <div class="version-header" onclick="toggleVersion('1.1.12')">
-            <div class="version-meta">
+            <div class="version-title-row">
                 <div class="version-number-badge ">
                     <span>v1.1.12</span>
                     
                 </div>
                 <div class="version-date">January 22, 2025</div>
-            </div>
-            <div class="version-info">
                 <h2 class="version-headline">New Country Stays and Statistics views in the History tab + some general UI and stability updates :)</h2>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
+            </div>
+            
+            <div class="version-summary-row">
                 <p class="version-summary">Introducing new timeline and statistics views in the History tab, plus general UI polish and stability improvements throughout the app.</p>
             </div>
-            <svg class="expand-icon">
-                <use href="#icon-chevron-down"></use>
-            </svg>
         </div>
 
         <div class="version-details">
-            <div class="details-content ">
-                <div class="details-text">
+            <div class="details-content">
 
-                    <div class="features-list">
+                <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title new">
@@ -1060,8 +1027,6 @@
                             </div>
                         </div>
 
-                    </div>
-
                 </div>
 
             </div>
@@ -1071,27 +1036,27 @@
     <!-- Version 1.1.11  -->
     <section class="version-section " id="v1.1.11" data-version="1.1.11">
         <div class="version-header" onclick="toggleVersion('1.1.11')">
-            <div class="version-meta">
+            <div class="version-title-row">
                 <div class="version-number-badge ">
                     <span>v1.1.11</span>
                     
                 </div>
                 <div class="version-date">December 15, 2024</div>
-            </div>
-            <div class="version-info">
                 <h2 class="version-headline">Performance improvements and bug fixes and a new Country Stays screen showing a timeline of your travels.</h2>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
+            </div>
+            
+            <div class="version-summary-row">
                 <p class="version-summary">New Country Stays timeline screen visualizes your travel history, alongside performance optimizations and stability improvements.</p>
             </div>
-            <svg class="expand-icon">
-                <use href="#icon-chevron-down"></use>
-            </svg>
         </div>
 
         <div class="version-details">
-            <div class="details-content ">
-                <div class="details-text">
+            <div class="details-content">
 
-                    <div class="features-list">
+                <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title new">
@@ -1153,8 +1118,6 @@
                             </div>
                         </div>
 
-                    </div>
-
                 </div>
 
             </div>
@@ -1164,27 +1127,27 @@
     <!-- Version 1.1.1  -->
     <section class="version-section " id="v1.1.1" data-version="1.1.1">
         <div class="version-header" onclick="toggleVersion('1.1.1')">
-            <div class="version-meta">
+            <div class="version-title-row">
                 <div class="version-number-badge ">
                     <span>v1.1.1</span>
                     
                 </div>
                 <div class="version-date">November 15, 2024</div>
-            </div>
-            <div class="version-info">
                 <h2 class="version-headline">Bug fixes and performance improvements</h2>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
+            </div>
+            
+            <div class="version-summary-row">
                 <p class="version-summary">General performance optimizations and bug fixes to improve overall app stability.</p>
             </div>
-            <svg class="expand-icon">
-                <use href="#icon-chevron-down"></use>
-            </svg>
         </div>
 
         <div class="version-details">
-            <div class="details-content ">
-                <div class="details-text">
+            <div class="details-content">
 
-                    <div class="features-list">
+                <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title improved">
@@ -1226,8 +1189,6 @@
                             </div>
                         </div>
 
-                    </div>
-
                 </div>
 
             </div>
@@ -1237,27 +1198,27 @@
     <!-- Version 1.1  -->
     <section class="version-section " id="v1.1" data-version="1.1">
         <div class="version-header" onclick="toggleVersion('1.1')">
-            <div class="version-meta">
+            <div class="version-title-row">
                 <div class="version-number-badge ">
                     <span>v1.1</span>
                     
                 </div>
                 <div class="version-date">November 1, 2024</div>
-            </div>
-            <div class="version-info">
                 <h2 class="version-headline">Bug fixes, performance improvements and a clearer UI for adding new logs.</h2>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
+            </div>
+            
+            <div class="version-summary-row">
                 <p class="version-summary">Improved interface for adding logs makes manual entry more intuitive, plus performance enhancements and bug fixes.</p>
             </div>
-            <svg class="expand-icon">
-                <use href="#icon-chevron-down"></use>
-            </svg>
         </div>
 
         <div class="version-details">
-            <div class="details-content ">
-                <div class="details-text">
+            <div class="details-content">
 
-                    <div class="features-list">
+                <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title improved">
@@ -1307,8 +1268,6 @@
                             </div>
                         </div>
 
-                    </div>
-
                 </div>
 
             </div>
@@ -1318,27 +1277,27 @@
     <!-- Version 1.0  -->
     <section class="version-section " id="v1.0" data-version="1.0">
         <div class="version-header" onclick="toggleVersion('1.0')">
-            <div class="version-meta">
+            <div class="version-title-row">
                 <div class="version-number-badge ">
                     <span>v1.0</span>
                     
                 </div>
                 <div class="version-date">October 1, 2024</div>
-            </div>
-            <div class="version-info">
                 <h2 class="version-headline">Initial Release</h2>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
+            </div>
+            
+            <div class="version-summary-row">
                 <p class="version-summary">Track your country stays with complete privacy - your location data never leaves your device. View travel history with charts, statistics, and a privacy-first design.</p>
             </div>
-            <svg class="expand-icon">
-                <use href="#icon-chevron-down"></use>
-            </svg>
         </div>
 
         <div class="version-details">
-            <div class="details-content ">
-                <div class="details-text">
+            <div class="details-content">
 
-                    <div class="features-list">
+                <div class="features-list">
 
                         <div class="feature-category">
                             <h3 class="category-title new">
@@ -1375,8 +1334,6 @@
 
                             </div>
                         </div>
-
-                    </div>
 
                 </div>
 
