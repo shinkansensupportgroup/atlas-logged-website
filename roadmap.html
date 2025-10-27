@@ -9,31 +9,10 @@
     <meta name="keywords" content="atlas logged, roadmap, upcoming features, future plans">
     <meta name="theme-color" content="#2563eb">
 
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://atlaslogged.com/roadmap.html">
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://atlaslogged.com/roadmap.html">
-    <meta property="og:site_name" content="Atlas Logged">
-    <meta property="og:title" content="Roadmap - Atlas Logged">
-    <meta property="og:description" content="See what's coming next for Atlas Logged.">
-    <meta property="og:image" content="https://atlaslogged.com/assets/logo.png">
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Roadmap - Atlas Logged">
-    <meta name="twitter:description" content="See what's coming next for Atlas Logged.">
-    <meta name="twitter:image" content="https://atlaslogged.com/assets/logo.png">
-
-    <title>Roadmap - Atlas Logged</title>
+    <title>Roadmap V2 - Atlas Logged (Prototype)</title>
 
     <!-- Apple Smart App Banner -->
     <meta name="apple-itunes-app" content="app-id=6538725214">
-
-    <!-- Preconnect to external domains -->
-    <link rel="preconnect" href="https://app.chatwoot.com">
-    <link rel="dns-prefetch" href="https://apps.apple.com">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
@@ -42,46 +21,104 @@
     <link rel="icon" type="image/png" href="assets/favicon.png">
 
     <style>
-        .roadmap-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
+        /* Kanban Container - Horizontal Scroll */
+        .roadmap-kanban {
+            display: flex;
+            overflow-x: auto;
+            overflow-y: hidden;
+            gap: 1.5rem;
+            padding: 2rem 1rem;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
         }
 
+        /* Custom scrollbar for desktop */
+        .roadmap-kanban::-webkit-scrollbar {
+            height: 10px;
+        }
+
+        .roadmap-kanban::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 5px;
+        }
+
+        .roadmap-kanban::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 5px;
+        }
+
+        .roadmap-kanban::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Kanban Column */
         .roadmap-column {
-            background: #f8fafc;
+            min-width: 320px;
+            flex-shrink: 0;
+            background: rgba(248, 250, 252, 0.8);
+            backdrop-filter: blur(10px);
             border-radius: 1rem;
             padding: 1.5rem;
             border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Column Header */
+        .roadmap-column-header {
+            margin-bottom: 1.5rem;
         }
 
         .roadmap-column h3 {
             margin: 0 0 0.5rem 0;
+            font-size: 1.125rem;
             color: #1e293b;
-            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .roadmap-column .status {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
+        .roadmap-column .column-count {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: normal;
         }
 
-        .status.available { background: #dcfce7; color: #166534; }
-        .status.next { background: #fef3c7; color: #92400e; }
-        .status.soon { background: #dbeafe; color: #1e40af; }
-        .status.future { background: #f3e8ff; color: #6b21a8; }
+        /* Feature Cards Container */
+        .feature-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+            max-height: 600px;
+            padding-right: 0.5rem;
+        }
 
+        .feature-cards::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .feature-cards::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .feature-cards::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        /* Feature Card */
         .feature-card {
             background: white;
             border-radius: 0.75rem;
             padding: 1.25rem;
-            margin-bottom: 1rem;
             border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .feature-card h4 {
@@ -94,14 +131,415 @@
         }
 
         .feature-card p {
+            margin: 0 0 1rem 0;
+            color: #64748b;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Vote Section */
+        .vote-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .vote-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            color: #2563eb;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .vote-button:hover {
+            background: #eff6ff;
+            border-color: #2563eb;
+        }
+
+        .vote-button.voted {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .vote-button.frozen {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .vote-count {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        /* Section Headers */
+        .roadmap-section {
+            margin: 3rem 0;
+        }
+
+        .roadmap-section-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .roadmap-section-header h2 {
+            font-size: 2rem;
+            margin: 0 0 0.5rem 0;
+            color: #1e293b;
+        }
+
+        .roadmap-section-header p {
+            color: #64748b;
+            font-size: 1.125rem;
+        }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-badge.community {
+            background: #f3e8ff;
+            color: #6b21a8;
+        }
+
+        .status-badge.priority {
+            background: #fed7aa;
+            color: #c2410c;
+        }
+
+        .status-badge.planned {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-badge.building {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.exploring {
+            background: #f3e8ff;
+            color: #6b21a8;
+        }
+
+        /* Mobile: Show peek of next column */
+        @media (max-width: 768px) {
+            .roadmap-kanban {
+                gap: 1rem;
+                padding: 1rem 0.5rem;
+            }
+
+            .roadmap-column {
+                min-width: 85vw;
+            }
+
+            .feature-cards {
+                max-height: 400px;
+            }
+        }
+
+        /* Delivered Section - Timeline Style */
+        .delivered-section {
+            background: linear-gradient(to bottom, #f8fafc 0%, white 100%);
+            padding: 4rem 0;
+            margin-top: 4rem;
+        }
+
+        .delivered-timeline {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .release-group {
+            margin-bottom: 3rem;
+            border-left: 3px solid #2563eb;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .release-group::before {
+            content: '';
+            position: absolute;
+            left: -9px;
+            top: 0;
+            width: 15px;
+            height: 15px;
+            background: #2563eb;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px #e0e7ff;
+        }
+
+        .release-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .release-version {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 0.25rem 0;
+        }
+
+        .release-date {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .release-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .delivered-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .delivered-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .delivered-card h4 {
+            margin: 0 0 0.5rem 0;
+            color: #1e293b;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .delivered-card p {
             margin: 0;
             color: #64748b;
             font-size: 0.875rem;
             line-height: 1.5;
         }
 
+        .delivered-card .final-votes {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f1f5f9;
+            font-size: 0.875rem;
+            color: #10b981;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .view-changelog-link {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .view-changelog-link:hover {
+            background: #1d4ed8;
+        }
+
+        /* Floating Action Button */
+        .fab-container {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+
+        .fab-button {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            border-radius: 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+            transition: all 0.3s;
+        }
+
+        .fab-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 32px rgba(37, 99, 235, 0.5);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #1e293b;
+            font-size: 1.5rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #64748b;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .close-modal:hover {
+            background: #f1f5f9;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 1rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .submit-button:hover {
+            background: #1d4ed8;
+        }
+
+        .char-count {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-align: right;
+            margin-top: 0.25rem;
+        }
+
         @media (max-width: 768px) {
-            .roadmap-grid {
+            .fab-button {
+                padding: 0.875rem 1.5rem;
+                font-size: 0.875rem;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .delivered-timeline {
+                padding: 0 1rem;
+            }
+
+            .release-features {
                 grid-template-columns: 1fr;
             }
         }
@@ -157,141 +595,425 @@
 
     <!-- Main Content -->
     <main id="main-content">
-        <!-- Roadmap Section -->
-        <section class="privacy">
+        <!-- Header -->
+        <section class="privacy" style="padding-bottom: 1rem;">
             <div class="container">
                 <img src="assets/logo.png" alt="Atlas Logged" class="section-logo">
-                <h1>Product Roadmap</h1>
-                <p class="intro">See what we're building next. Our roadmap reflects our commitment to privacy, performance, and powerful travel insights.</p>
+                <h1>Product Roadmap V2</h1>
+                <p class="intro">Vote on features and see what we're building next. This is a prototype of the new interactive roadmap!</p>
+            </div>
+        </section>
 
-                <div class="roadmap-grid">
-                    <!-- Available Now -->
+        <!-- Community Voice Section -->
+        <section class="roadmap-section">
+            <div class="container">
+                <div class="roadmap-section-header">
+                    <h2>🗳️ Community Voice</h2>
+                    <p>Vote to influence what we build next!</p>
+                </div>
+
+                <div class="roadmap-kanban">
+                    <!-- Column 1: Community Requests -->
                     <div class="roadmap-column">
-                        <h3>Available Now</h3>
-                        <span class="status available">🟢 Live</span>
-
-                        <div class="feature-card">
-                            <h4>📅 Travel Planner</h4>
-                            <p>Plan your future travels and visualize upcoming journeys</p>
+                        <div class="roadmap-column-header">
+                            <h3>🟣 Community Requests</h3>
+                            <span class="status-badge community">Just Submitted</span>
+                            <p class="column-count">5 requests</p>
                         </div>
 
-                        <div class="feature-card">
-                            <h4>☁️ iCloud Sync</h4>
-                            <p>Free file-based sync and premium automatic CloudKit sync</p>
-                        </div>
+                        <div class="feature-cards">
+                            <div class="feature-card">
+                                <h4>🌙 Dark Mode</h4>
+                                <p>Add a dark theme option for better viewing at night and reduced eye strain</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">42 votes</span>
+                                </div>
+                            </div>
 
-                        <div class="feature-card">
-                            <h4>🌍 Arabic Support</h4>
-                            <p>Complete right-to-left interface for Arabic speakers</p>
-                        </div>
+                            <div class="feature-card">
+                                <h4>🏷️ Custom Tags</h4>
+                                <p>Let users add custom tags to locations (business trip, vacation, etc.)</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">38 votes</span>
+                                </div>
+                            </div>
 
-                        <div class="feature-card">
-                            <h4>🗺️ Map View</h4>
-                            <p>Visualize your travels on an interactive map</p>
+                            <div class="feature-card">
+                                <h4>📤 Export to CSV</h4>
+                                <p>Export all location data as CSV file for analysis in Excel/Numbers</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">29 votes</span>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <h4>🔔 Smart Notifications</h4>
+                                <p>Get notified when you visit a new country or city for the first time</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">15 votes</span>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <h4>🎨 Custom Map Styles</h4>
+                                <p>Choose different map visual styles (satellite, terrain, vintage)</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">12 votes</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Next Up (In Development) -->
+                    <!-- Column 2: Prioritising -->
                     <div class="roadmap-column">
-                        <h3>Next Up</h3>
-                        <span class="status next">🟡 In Development</span>
-
-                        <div class="feature-card">
-                            <h4>📸 Photo Integration</h4>
-                            <p>Import your travel history from photo metadata in your camera roll</p>
+                        <div class="roadmap-column-header">
+                            <h3>🟠 Prioritising</h3>
+                            <span class="status-badge priority">We're Considering</span>
+                            <p class="column-count">3 features</p>
                         </div>
 
-                        <div class="feature-card">
-                            <h4>⚡ Performance Boost</h4>
-                            <p>Faster app launch and smoother scrolling, even with years of data</p>
-                        </div>
+                        <div class="feature-cards">
+                            <div class="feature-card">
+                                <h4>📊 Year in Review</h4>
+                                <p>Beautiful annual summary of your travels with stats and highlights</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">156 votes</span>
+                                </div>
+                            </div>
 
-                        <div class="feature-card">
-                            <h4>📊 Enhanced Stats</h4>
-                            <p>More detailed insights into your travel patterns and history</p>
-                        </div>
-                    </div>
+                            <div class="feature-card">
+                                <h4>🎯 Travel Goals</h4>
+                                <p>Set goals like "visit 50 countries" and track progress</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">89 votes</span>
+                                </div>
+                            </div>
 
-                    <!-- Coming Soon -->
-                    <div class="roadmap-column">
-                        <h3>Coming Soon</h3>
-                        <span class="status soon">🔵 Planned</span>
-
-                        <div class="feature-card">
-                            <h4>🤖 Smart Predictions</h4>
-                            <p>AI-powered predictions of your next destination based on travel patterns</p>
-                        </div>
-
-                        <div class="feature-card">
-                            <h4>✈️ Visa Tracking</h4>
-                            <p>Never overstay! Get warnings before reaching visa time limits</p>
-                        </div>
-
-                        <div class="feature-card">
-                            <h4>💰 Premium Features</h4>
-                            <p>Early access to new features before general release</p>
-                        </div>
-
-                        <div class="feature-card">
-                            <h4>📝 Advanced Notes</h4>
-                            <p>Rich notes with timestamps for each location and journey</p>
-                        </div>
-                    </div>
-
-                    <!-- Future Vision -->
-                    <div class="roadmap-column">
-                        <h3>Future Vision</h3>
-                        <span class="status future">⚪ Exploring</span>
-
-                        <div class="feature-card">
-                            <h4>🖥️ Mac App</h4>
-                            <p>Full-featured desktop companion for macOS</p>
-                        </div>
-
-                        <div class="feature-card">
-                            <h4>👪 Family Sharing</h4>
-                            <p>Share and coordinate travels with family members</p>
-                        </div>
-
-                        <div class="feature-card">
-                            <h4>🔌 Third-Party Integrations</h4>
-                            <p>Connect with calendar, expense, and health apps</p>
-                        </div>
-
-                        <div class="feature-card">
-                            <h4>🌐 Web Dashboard</h4>
-                            <p>View your travel history from any browser</p>
+                            <div class="feature-card">
+                                <h4>🗓️ Timeline View</h4>
+                                <p>View your travel history as an interactive timeline</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">67 votes</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </section>
 
+        <!-- Official Roadmap Section -->
+        <section class="roadmap-section">
+            <div class="container">
+                <div class="roadmap-section-header">
+                    <h2>📍 Official Roadmap</h2>
+                    <p>Our committed plan - voting helps us prioritize</p>
+                </div>
+
+                <div class="roadmap-kanban">
+                    <!-- Column 3: Planned (Coming Soon) -->
+                    <div class="roadmap-column">
+                        <div class="roadmap-column-header">
+                            <h3>🔵 Planned</h3>
+                            <span class="status-badge planned">Coming Soon</span>
+                            <p class="column-count">4 features</p>
+                        </div>
+
+                        <div class="feature-cards">
+                            <div class="feature-card">
+                                <h4>🤖 Smart Predictions</h4>
+                                <p>AI-powered predictions of your next destination based on travel patterns</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">234 votes</span>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <h4>✈️ Visa Tracking</h4>
+                                <p>Never overstay! Get warnings before reaching visa time limits</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">189 votes</span>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <h4>💰 Premium Features</h4>
+                                <p>Early access to new features before general release</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">145 votes</span>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <h4>📝 Advanced Notes</h4>
+                                <p>Rich notes with timestamps for each location and journey</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">98 votes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 4: Building (Next Up) -->
+                    <div class="roadmap-column">
+                        <div class="roadmap-column-header">
+                            <h3>🟡 Building</h3>
+                            <span class="status-badge building">In Development</span>
+                            <p class="column-count">3 features</p>
+                        </div>
+
+                        <div class="feature-cards">
+                            <div class="feature-card">
+                                <h4>📸 Photo Integration</h4>
+                                <p>Import your travel history from photo metadata in your camera roll</p>
+                                <div class="vote-section">
+                                    <button class="vote-button frozen" disabled>
+                                        🔒 Frozen
+                                    </button>
+                                    <span class="vote-count">312 votes</span>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <h4>⚡ Performance Boost</h4>
+                                <p>Faster app launch and smoother scrolling, even with years of data</p>
+                                <div class="vote-section">
+                                    <button class="vote-button frozen" disabled>
+                                        🔒 Frozen
+                                    </button>
+                                    <span class="vote-count">267 votes</span>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <h4>📊 Enhanced Stats</h4>
+                                <p>More detailed insights into your travel patterns and history</p>
+                                <div class="vote-section">
+                                    <button class="vote-button frozen" disabled>
+                                        🔒 Frozen
+                                    </button>
+                                    <span class="vote-count">201 votes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 5: Exploring (Future Vision) -->
+                    <div class="roadmap-column">
+                        <div class="roadmap-column-header">
+                            <h3>⚪ Exploring</h3>
+                            <span class="status-badge exploring">Future Ideas</span>
+                            <p class="column-count">4 features</p>
+                        </div>
+
+                        <div class="feature-cards">
+                            <div class="feature-card">
+                                <h4>🖥️ Mac App</h4>
+                                <p>Full-featured desktop companion for macOS</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">567 votes</span>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <h4>👪 Family Sharing</h4>
+                                <p>Share and coordinate travels with family members</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">234 votes</span>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <h4>🔌 Third-Party Integrations</h4>
+                                <p>Connect with calendar, expense, and health apps</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">178 votes</span>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <h4>🌐 Web Dashboard</h4>
+                                <p>View your travel history from any browser</p>
+                                <div class="vote-section">
+                                    <button class="vote-button" onclick="vote(this)">
+                                        ⬆️ Vote
+                                    </button>
+                                    <span class="vote-count">445 votes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Delivered Section (Timeline) -->
+        <section class="delivered-section">
+            <div class="container">
+                <div class="roadmap-section-header">
+                    <h2>✅ Delivered</h2>
+                    <p>Features we've shipped - see what the community voted for!</p>
+                </div>
+
+                <div class="delivered-timeline">
+                    <!-- Version 1.1.20 -->
+                    <div class="release-group">
+                        <div class="release-header">
+                            <h3 class="release-version">Version 1.1.20</h3>
+                            <p class="release-date">February 2025</p>
+                        </div>
+                        <div class="release-features">
+                            <div class="delivered-card">
+                                <h4>📅 Travel Planner</h4>
+                                <p>Plan your future travels and visualize upcoming journeys</p>
+                                <div class="final-votes">
+                                    ✅ 445 community votes
+                                </div>
+                            </div>
+                            <div class="delivered-card">
+                                <h4>☁️ iCloud Sync</h4>
+                                <p>Free file-based sync and premium automatic CloudKit sync</p>
+                                <div class="final-votes">
+                                    ✅ 389 community votes
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 1.1.19 -->
+                    <div class="release-group">
+                        <div class="release-header">
+                            <h3 class="release-version">Version 1.1.19</h3>
+                            <p class="release-date">January 2025</p>
+                        </div>
+                        <div class="release-features">
+                            <div class="delivered-card">
+                                <h4>🌍 Arabic Support</h4>
+                                <p>Complete right-to-left interface for Arabic speakers</p>
+                                <div class="final-votes">
+                                    ✅ 156 community votes
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 1.1.17 -->
+                    <div class="release-group">
+                        <div class="release-header">
+                            <h3 class="release-version">Version 1.1.17</h3>
+                            <p class="release-date">December 2024</p>
+                        </div>
+                        <div class="release-features">
+                            <div class="delivered-card">
+                                <h4>🗺️ Map View</h4>
+                                <p>Visualize your travels on an interactive map</p>
+                                <div class="final-votes">
+                                    ✅ 523 community votes
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 3rem;">
+                        <a href="changelog.html" class="view-changelog-link">
+                            View Full Changelog →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Commitment Section -->
+        <section class="roadmap-section">
+            <div class="container">
                 <div class="policy-content">
                     <div class="policy-highlight">
                         <p><strong>Our Commitment:</strong> All features will maintain our privacy-first approach. Your data stays on your device unless you explicitly choose to sync via iCloud. We'll never collect, sell, or share your location data.</p>
-                        <p style="margin-top: 1rem;">Have a feature idea? <a href="mailto:support@atlascodes.ai" style="color: #2563eb; text-decoration: none;">Let us know!</a></p>
+                        <p style="margin-top: 1rem;"><strong>Note:</strong> This is a prototype. Once approved, voting will be connected to Google Sheets for real-time community input!</p>
                     </div>
                 </div>
             </div>
         </section>
-
-        <!-- Download Section -->
-        <section class="download">
-            <div class="container">
-                <img src="assets/logo.png" alt="Atlas Logged" class="section-logo">
-                <h2>Download Atlas Logged</h2>
-                <p>Start tracking your travels with complete privacy</p>
-
-                <a href="https://apps.apple.com/us/app/atlas-logged/id6538725214?itscg=30200&itsct=apps_box_badge&mttnsubad=6538725214"
-                    target="_blank" rel="noopener noreferrer" style="display: inline-block;" aria-label="Download Atlas Logged on the App Store (opens in new window)">
-                    <img src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/white/en-us?releaseDate=1723766400"
-                        alt="Download on the App Store"
-                        style="width: 246px; height: 82px; vertical-align: middle; object-fit: contain;" loading="lazy" />
-                </a>
-
-                <p class="requirements">Requires iOS 17.0 or later</p>
-            </div>
-        </section>
     </main>
+
+    <!-- Floating Action Button -->
+    <div class="fab-container">
+        <button class="fab-button" id="openModal">
+            💡 Suggest a Feature
+        </button>
+    </div>
+
+    <!-- Feature Submission Modal -->
+    <div class="modal" id="featureModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>💡 Suggest a Feature</h3>
+                <button class="close-modal" id="closeModal" aria-label="Close modal">&times;</button>
+            </div>
+            <form id="feature-form">
+                <div class="form-group">
+                    <label for="feature-title">Feature Title *</label>
+                    <input type="text" id="feature-title" placeholder="E.g. Dark Mode Support" maxlength="100" required>
+                    <div class="char-count"><span id="title-count">0</span>/100</div>
+                </div>
+                <div class="form-group">
+                    <label for="feature-description">Description *</label>
+                    <textarea id="feature-description" placeholder="Describe your feature idea..." maxlength="500" required></textarea>
+                    <div class="char-count"><span id="desc-count">0</span>/500</div>
+                </div>
+                <div class="form-group">
+                    <label for="feature-email">Email (optional)</label>
+                    <input type="email" id="feature-email" placeholder="your@email.com">
+                </div>
+                <button type="submit" class="submit-button">Submit Feature Request</button>
+            </form>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer>
@@ -313,28 +1035,143 @@
         </div>
     </footer>
 
-    <!-- Chatwoot Widget -->
+    <!-- Prototype JavaScript -->
     <script>
-        window.chatwootSettings = {
-            hideMessageBubble: false,
-            position: "right",
-            locale: "en"
-        };
+        // Modal controls
+        const modal = document.getElementById('featureModal');
+        const openModalBtn = document.getElementById('openModal');
+        const closeModalBtn = document.getElementById('closeModal');
 
-        (function (d, t) {
-            var BASE_URL = "https://app.chatwoot.com";
-            var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
-            g.src = BASE_URL + "/packs/js/sdk.js";
-            g.defer = true;
-            g.async = true;
-            s.parentNode.insertBefore(g, s);
-            g.onload = function () {
-                window.chatwootSDK.run({
-                    websiteToken: 'xiyWsj719fc5BZUsg8i4n88i',
-                    baseUrl: BASE_URL
-                })
+        openModalBtn.addEventListener('click', () => {
+            modal.classList.add('active');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
             }
-        })(document, "script");
+        });
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+            }
+        });
+
+        // Character counters
+        document.getElementById('feature-title').addEventListener('input', function(e) {
+            document.getElementById('title-count').textContent = e.target.value.length;
+        });
+
+        document.getElementById('feature-description').addEventListener('input', function(e) {
+            document.getElementById('desc-count').textContent = e.target.value.length;
+        });
+
+        // Form submission (prototype - just shows alert)
+        document.getElementById('feature-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('feature-title').value;
+            alert('✅ Feature submitted: "' + title + '"\n\n(This is a prototype - no actual submission yet!)');
+            modal.classList.remove('active');
+            this.reset();
+            document.getElementById('title-count').textContent = '0';
+            document.getElementById('desc-count').textContent = '0';
+        });
+
+        // ========================================
+        // Vote Persistence with localStorage
+        // ========================================
+
+        // Get voted features from localStorage
+        function getVotedFeatures() {
+            const voted = localStorage.getItem('atlas_voted_features');
+            return voted ? JSON.parse(voted) : [];
+        }
+
+        // Save voted features to localStorage
+        function saveVotedFeatures(votedArray) {
+            localStorage.setItem('atlas_voted_features', JSON.stringify(votedArray));
+        }
+
+        // Generate unique feature ID from card content
+        function getFeatureId(button) {
+            const card = button.closest('.feature-card, .delivered-card');
+            const title = card.querySelector('h4').textContent.trim();
+            // Simple hash from title (good enough for prototype)
+            let hash = 0;
+            for (let i = 0; i < title.length; i++) {
+                hash = ((hash << 5) - hash) + title.charCodeAt(i);
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            return Math.abs(hash);
+        }
+
+        // Restore voted state on page load
+        function restoreVotedState() {
+            const votedFeatures = getVotedFeatures();
+            document.querySelectorAll('.vote-button:not(.frozen)').forEach(button => {
+                const featureId = getFeatureId(button);
+                if (votedFeatures.includes(featureId)) {
+                    button.classList.add('voted');
+                    button.innerHTML = '✅ Voted';
+                }
+            });
+        }
+
+        // Voting function with localStorage persistence
+        function vote(button) {
+            // Ignore frozen buttons
+            if (button.disabled || button.classList.contains('frozen')) {
+                return;
+            }
+
+            const featureId = getFeatureId(button);
+            const votedFeatures = getVotedFeatures();
+
+            if (button.classList.contains('voted')) {
+                // Unvote (remove from localStorage)
+                const index = votedFeatures.indexOf(featureId);
+                if (index > -1) {
+                    votedFeatures.splice(index, 1);
+                    saveVotedFeatures(votedFeatures);
+                }
+                button.classList.remove('voted');
+                button.innerHTML = '⬆️ Vote';
+
+                // In real version: API call to decrement vote count
+                console.log('Unvoted feature:', featureId);
+            } else {
+                // Check if already voted (double-check)
+                if (votedFeatures.includes(featureId)) {
+                    alert('You already voted for this feature!');
+                    return;
+                }
+
+                // Vote (add to localStorage)
+                votedFeatures.push(featureId);
+                saveVotedFeatures(votedFeatures);
+
+                button.classList.add('voted');
+                button.innerHTML = '✅ Voted';
+
+                // In real version: API call to increment vote count
+                console.log('Voted for feature:', featureId);
+            }
+        }
+
+        // Restore voted state when page loads
+        document.addEventListener('DOMContentLoaded', restoreVotedState);
+
+        // Also restore if page is already loaded (for hot reload in development)
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setTimeout(restoreVotedState, 100);
+        }
     </script>
 
     <!-- Feature Flags -->

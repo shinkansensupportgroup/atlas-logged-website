@@ -24,7 +24,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="What's New - Atlas Logged">
     <meta name="twitter:description" content="See what's new in the latest version of Atlas Logged.">
-    <meta name="twitter:image" content="https://atlaslogged.com/assets/logo.png">
+    <meta property="twitter:image" content="https://atlaslogged.com/assets/logo.png">
 
     <title>What's New - Atlas Logged</title>
 
@@ -45,29 +45,69 @@
     <style>
         /* Changelog-specific styles */
         .version-section {
-            margin-bottom: 4rem;
-            padding-bottom: 3rem;
-            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background: white;
+            transition: all 0.3s ease;
         }
 
-        .version-section:last-of-type {
-            border-bottom: none;
+        .version-section.coming-soon {
+            border-color: #fed7aa;
+            background: linear-gradient(to right, #fffbeb 0%, white 100%);
+        }
+
+        .version-section.expanded {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
 
         .version-header {
-            margin-bottom: 2rem;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+        .version-header:hover {
+            background-color: #f8fafc;
+        }
+
+        .version-title-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1.5rem;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .version-meta-left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .version-badges {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
         }
 
         .version-number-badge {
             display: inline-flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.4rem;
             background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 2rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
+            padding: 0.35rem 0.75rem;
+            border-radius: 1.25rem;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .version-number-badge.upcoming {
@@ -76,143 +116,251 @@
         }
 
         @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.3); }
-            50% { box-shadow: 0 0 30px rgba(245, 158, 11, 0.6); }
-        }
-
-        .version-number {
-            font-size: 1.25rem;
-            font-weight: 700;
+            0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.5); }
         }
 
         .coming-soon-badge {
             background: rgba(255, 255, 255, 0.25);
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.625rem;
+            font-size: 0.625rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
 
         .version-date {
-            font-size: 0.875rem;
-            opacity: 0.9;
-        }
-
-        .version-section.coming-soon {
-            position: relative;
-            opacity: 0.95;
-        }
-
-        .version-section.coming-soon::before {
-            content: '';
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            right: -10px;
-            bottom: -10px;
-            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
-            border-radius: 1rem;
-            opacity: 0.1;
-            z-index: -1;
-            pointer-events: none;
+            font-size: 0.8125rem;
+            color: #64748b;
+            white-space: nowrap;
         }
 
         .version-headline {
-            font-size: 2rem;
-            font-weight: 700;
+            font-size: 1.5rem;
+            font-weight: 600;
             color: #1e293b;
-            margin: 1rem 0;
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .expand-icon {
+            width: 20px;
+            height: 20px;
+            color: #64748b;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+        }
+
+        .version-section.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .version-summary-row {
+            padding: 1rem 1.5rem;
+            background: #f8fafc;
+        }
+
+        .version-summary {
+            font-size: 0.9375rem;
+            color: #64748b;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .version-details {
+            display: none;
+        }
+
+        .version-section.expanded .version-details {
+            display: block;
+        }
+
+        .details-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            background: white;
+        }
+
+        .details-text {
+            min-width: 0;
+        }
+
+        .details-video {
+            display: flex;
+            justify-content: center;
+            padding: 0;
         }
 
         .video-container {
-            margin: 2rem 0;
-            border-radius: 1rem;
+            border-radius: 0.75rem;
             overflow: hidden;
-            background: #f1f5f9;
+            background: #1e293b;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            max-width: 550px;
+            width: 100%;
+        }
+
+        /* Desktop: side-by-side layout */
+        @media (min-width: 1200px) {
+            .details-content {
+                grid-template-columns: 1fr 400px;
+                gap: 3rem;
+                align-items: start;
+            }
+
+            .details-video {
+                position: sticky;
+                top: 2rem;
+                justify-content: flex-start;
+            }
+
+            .video-container {
+                max-width: 100%;
+            }
         }
 
         .changelog-video {
             width: 100%;
-            max-width: 100%;
             display: block;
         }
 
         .video-size-note {
-            padding: 0.75rem 1rem;
-            font-size: 0.875rem;
-            color: #64748b;
+            padding: 0.75rem;
+            font-size: 0.8125rem;
+            color: #94a3b8;
             text-align: center;
+            margin: 0;
+            background: #1e293b;
+        }
+
+        .features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .feature-category {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
             margin: 0;
         }
 
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
+        .category-icon {
+            width: 18px;
+            height: 18px;
         }
 
-        .feature-card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-            transition: all 0.2s;
-        }
+        .category-title.new { color: #2563eb; }
+        .category-title.improved { color: #16a34a; }
+        .category-title.fixed { color: #d97706; }
 
-        .feature-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
-
-        .feature-icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 0.75rem;
+        .feature-items {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1rem;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
-        .new-feature .feature-icon {
-            background: #dbeafe;
-            color: #2563eb;
+        .feature-item {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 0.5rem;
+            border-left: 3px solid #e2e8f0;
         }
 
-        .improved-feature .feature-icon {
-            background: #dcfce7;
-            color: #16a34a;
+        .feature-item.new { border-left-color: #2563eb; }
+        .feature-item.improved { border-left-color: #16a34a; }
+        .feature-item.fixed { border-left-color: #d97706; }
+
+        .feature-bullet {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-top: 0.5rem;
+            flex-shrink: 0;
         }
 
-        .fixed-feature .feature-icon {
-            background: #fef3c7;
-            color: #d97706;
+        .feature-item.new .feature-bullet { background: #2563eb; }
+        .feature-item.improved .feature-bullet { background: #16a34a; }
+        .feature-item.fixed .feature-bullet { background: #d97706; }
+
+        .feature-content {
+            min-width: 0;
         }
 
         .feature-title {
-            font-size: 1.125rem;
+            font-size: 0.9375rem;
             font-weight: 600;
             color: #1e293b;
-            margin: 0 0 0.5rem 0;
+            margin: 0 0 0.25rem 0;
         }
 
         .feature-description {
-            font-size: 0.9375rem;
+            font-size: 0.875rem;
             color: #64748b;
-            line-height: 1.6;
+            line-height: 1.5;
             margin: 0;
         }
 
-        @media (max-width: 768px) {
-            .features-grid {
+        /* Tablet and below: stack vertically */
+        @media (max-width: 1199px) {
+            .details-content {
                 grid-template-columns: 1fr;
             }
 
+            .details-video {
+                order: -1; /* Video appears first on mobile/tablet */
+                padding: 0 1rem;
+            }
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .version-title-row {
+                padding: 1rem;
+            }
+
             .version-headline {
-                font-size: 1.5rem;
+                font-size: 1.25rem;
+            }
+
+            .version-summary-row {
+                padding: 0.875rem 1rem;
+            }
+
+            .version-summary {
+                font-size: 0.875rem;
+            }
+
+            .details-content {
+                padding: 1.25rem;
+                gap: 1.5rem;
+            }
+
+            .details-video {
+                padding: 0;
+            }
+
+            .video-container {
+                max-width: 100%;
             }
         }
     </style>
@@ -223,23 +371,24 @@
     <!-- Skip to main content link for accessibility -->
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
 
-    <!-- SVG Filters for Subtle Glass Distortion (Chromium only) -->
+    <!-- SVG Icons -->
     <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
         <defs>
-            <filter id="glass-distortion" color-interpolation-filters="sRGB" x="-50%" y="-50%" width="200%" height="200%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.01 0.01" numOctaves="1" seed="7" result="noise" />
-                <feGaussianBlur in="noise" stdDeviation="1.5" result="smooth" />
-                <feDisplacementMap in="SourceGraphic" in2="smooth" scale="3" xChannelSelector="R" yChannelSelector="G" />
-            </filter>
-            <!-- Icons -->
-            <symbol id="icon-star" viewBox="0 0 24 24">
+            <!-- Icon: Chevron Down -->
+            <symbol id="icon-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+            </symbol>
+            <!-- Icon: Star (New) -->
+            <symbol id="icon-star" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
             </symbol>
-            <symbol id="icon-trending-up" viewBox="0 0 24 24">
+            <!-- Icon: Trending Up (Improved) -->
+            <symbol id="icon-trending-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
                 <polyline points="17 6 23 6 23 12"/>
             </symbol>
-            <symbol id="icon-check-circle" viewBox="0 0 24 24">
+            <!-- Icon: Check Circle (Fixed) -->
+            <symbol id="icon-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                 <polyline points="22 4 12 14.01 9 11.01"/>
             </symbol>
@@ -290,577 +439,1033 @@
                     <!-- VERSIONS WILL BE INSERTED HERE -->
 
     <!-- Version 1.2.0 (Coming Soon) -->
-    <section class="version-section coming-soon" id="v1.2.0">
-        <div class="version-header">
-            <div class="version-number-badge upcoming">
-                <span class="version-number">v1.2.0</span>
-                <span class="coming-soon-badge">Coming Soon</span>
-                <span class="version-date">Estimated Release: March 15, 2025</span>
+    <section class="version-section coming-soon" id="v1.2.0" data-version="1.2.0">
+        <div class="version-header" onclick="toggleVersion('1.2.0')">
+            <div class="version-title-row">
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge upcoming">
+                            <span>v1.2.0</span>
+                            <span class="coming-soon-badge">Coming Soon</span>
+                        </div>
+                        <div class="version-date">Est. March 10, 2026</div>
+                    </div>
+                    <h2 class="version-headline">Introducing Unified Onboarding & Smart Update System</h2>
+                </div>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
             </div>
-            <h2 class="version-headline">Introducing Unified Onboarding & Smart Update System</h2>
+            
+            <div class="version-summary-row">
+                <p class="version-summary">A complete overhaul of the onboarding experience with context-aware screens, video feature announcements, and intelligent update detection that shows you exactly what's new and what settings to review.</p>
+            </div>
         </div>
 
-        <div class="video-container">
-            <video
-                controls
-                preload="metadata"
-                poster="https://github.com/shinkansensupportgroup/atlas-logged/releases/download/v1.2.0/v1.2.0-thumb.jpg"
-                class="changelog-video"
-            >
-                <source src="https://github.com/shinkansensupportgroup/atlas-logged/releases/download/v1.2.0/v1.2.0.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-            <p class="video-size-note">Video size: 35.0MB • Duration: 60s</p>
-        </div>
+        <div class="version-details">
+            <div class="details-content">
+                <div class="details-text">
 
-        <div class="features-grid">
+                    <div class="features-list">
 
-            <div class="feature-card new-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-star"></use>
-                    </svg>
+                        <div class="feature-category">
+                            <h3 class="category-title new">
+                                <svg class="category-icon">
+                                    <use href="#icon-star"></use>
+                                </svg>
+                                New Features
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item new">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Unified Onboarding System</div>
+                                        <div class="feature-description">Seamless first-time experience with smart update announcements</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item new">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Video Feature Announcements</div>
+                                        <div class="feature-description">See what's new with beautiful feature videos</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item new">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Smart Update Detection</div>
+                                        <div class="feature-description">Automatically shows you relevant updates and settings to review</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="feature-category">
+                            <h3 class="category-title improved">
+                                <svg class="category-icon">
+                                    <use href="#icon-trending-up"></use>
+                                </svg>
+                                Improvements
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item improved">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Onboarding Flow</div>
+                                        <div class="feature-description">Screens now work in multiple contexts (standalone, updates, reviews)</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item improved">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Performance</div>
+                                        <div class="feature-description">Faster app launch with optimized video caching</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="feature-category">
+                            <h3 class="category-title fixed">
+                                <svg class="category-icon">
+                                    <use href="#icon-check-circle"></use>
+                                </svg>
+                                Bug Fixes
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item fixed">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Permission Handling</div>
+                                        <div class="feature-description">Better handling of location permissions across app lifecycle</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
-                <h3 class="feature-title">Unified Onboarding System</h3>
-                <p class="feature-description">Seamless first-time experience with smart update announcements</p>
-            </div>
 
-            <div class="feature-card new-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-star"></use>
-                    </svg>
+                <div class="details-video">
+                    <div class="video-container">
+                        <video
+                            controls
+                            preload="metadata"
+                            poster="https://github.com/shinkansensupportgroup/atlas-logged-website/releases/download/v1.2.0/v1.2.0-thumb.jpg"
+                            class="changelog-video"
+                        >
+                            <source src="https://github.com/shinkansensupportgroup/atlas-logged-website/releases/download/v1.2.0/v1.2.0.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <p class="video-size-note">1.4MB • 26s</p>
+                    </div>
                 </div>
-                <h3 class="feature-title">Video Feature Announcements</h3>
-                <p class="feature-description">See what's new with beautiful feature videos</p>
-            </div>
 
-            <div class="feature-card new-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-star"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Smart Update Detection</h3>
-                <p class="feature-description">Automatically shows you relevant updates and settings to review</p>
             </div>
-
-            <div class="feature-card improved-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-trending-up"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Onboarding Flow</h3>
-                <p class="feature-description">Screens now work in multiple contexts (standalone, updates, reviews)</p>
-            </div>
-
-            <div class="feature-card improved-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-trending-up"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Performance</h3>
-                <p class="feature-description">Faster app launch with optimized video caching</p>
-            </div>
-
-            <div class="feature-card fixed-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-check-circle"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Permission Handling</h3>
-                <p class="feature-description">Better handling of location permissions across app lifecycle</p>
-            </div>
-
         </div>
     </section>
 
     <!-- Version 1.1.18  -->
-    <section class="version-section " id="v1.1.18">
-        <div class="version-header">
-            <div class="version-number-badge ">
-                <span class="version-number">v1.1.18</span>
-                
-                <span class="version-date">Released: February 12, 2025</span>
+    <section class="version-section " id="v1.1.18" data-version="1.1.18">
+        <div class="version-header" onclick="toggleVersion('1.1.18')">
+            <div class="version-title-row">
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.18</span>
+                            
+                        </div>
+                        <div class="version-date">February 11, 2025</div>
+                    </div>
+                    <h2 class="version-headline">Minor Changes and Fixes</h2>
+                </div>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
             </div>
-            <h2 class="version-headline">Minor Changes and Fixes</h2>
+            
+            <div class="version-summary-row">
+                <p class="version-summary">Performance improvements for the log view and better localization support, along with fixes for donation history display and map rendering.</p>
+            </div>
         </div>
 
-        <div class="features-grid">
+        <div class="version-details">
+            <div class="details-content">
+                <div class="details-text">
 
-            <div class="feature-card improved-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-trending-up"></use>
-                    </svg>
+                    <div class="features-list">
+
+                        <div class="feature-category">
+                            <h3 class="category-title improved">
+                                <svg class="category-icon">
+                                    <use href="#icon-trending-up"></use>
+                                </svg>
+                                Improvements
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item improved">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Localization</div>
+                                        <div class="feature-description">Improved localization support</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item improved">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Performance</div>
+                                        <div class="feature-description">Performance improvements for log view</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="feature-category">
+                            <h3 class="category-title fixed">
+                                <svg class="category-icon">
+                                    <use href="#icon-check-circle"></use>
+                                </svg>
+                                Bug Fixes
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item fixed">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Donation History</div>
+                                        <div class="feature-description">Fixed donation history display issues</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item fixed">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Map View</div>
+                                        <div class="feature-description">Fixed map view rendering problems</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
-                <h3 class="feature-title">Localization</h3>
-                <p class="feature-description">Improved localization support</p>
-            </div>
 
-            <div class="feature-card improved-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-trending-up"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Performance</h3>
-                <p class="feature-description">Performance improvements for log view</p>
             </div>
-
-            <div class="feature-card fixed-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-check-circle"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Donation History</h3>
-                <p class="feature-description">Fixed donation history display issues</p>
-            </div>
-
-            <div class="feature-card fixed-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-check-circle"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Map View</h3>
-                <p class="feature-description">Fixed map view rendering problems</p>
-            </div>
-
         </div>
     </section>
 
     <!-- Version 1.1.17  -->
-    <section class="version-section " id="v1.1.17">
-        <div class="version-header">
-            <div class="version-number-badge ">
-                <span class="version-number">v1.1.17</span>
-                
-                <span class="version-date">Released: February 11, 2025</span>
+    <section class="version-section " id="v1.1.17" data-version="1.1.17">
+        <div class="version-header" onclick="toggleVersion('1.1.17')">
+            <div class="version-title-row">
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.17</span>
+                            
+                        </div>
+                        <div class="version-date">February 10, 2025</div>
+                    </div>
+                    <h2 class="version-headline">New Features</h2>
+                </div>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
             </div>
-            <h2 class="version-headline">New Features</h2>
+            
+            <div class="version-summary-row">
+                <p class="version-summary">Future logs now display with visual distinction, plus early access to enhanced log view with TSV export and a brand new map view.</p>
+            </div>
         </div>
 
-        <div class="features-grid">
+        <div class="version-details">
+            <div class="details-content">
+                <div class="details-text">
 
-            <div class="feature-card new-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-star"></use>
-                    </svg>
+                    <div class="features-list">
+
+                        <div class="feature-category">
+                            <h3 class="category-title new">
+                                <svg class="category-icon">
+                                    <use href="#icon-star"></use>
+                                </svg>
+                                New Features
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item new">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Future Logs Visualization</div>
+                                        <div class="feature-description">Future logs are shown with reduced opacity</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item new">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Early Access Log View</div>
+                                        <div class="feature-description">*Early access log view improvements + tsv export</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item new">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Early Access Map View</div>
+                                        <div class="feature-description">*Early access map view added</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="feature-category">
+                            <h3 class="category-title improved">
+                                <svg class="category-icon">
+                                    <use href="#icon-trending-up"></use>
+                                </svg>
+                                Improvements
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item improved">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Launch Performance</div>
+                                        <div class="feature-description">Launch and manual log performance improvements</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item improved">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Location Change Threshold</div>
+                                        <div class="feature-description">Updated Location Change threshold steps</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="feature-category">
+                            <h3 class="category-title fixed">
+                                <svg class="category-icon">
+                                    <use href="#icon-check-circle"></use>
+                                </svg>
+                                Bug Fixes
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item fixed">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Manual Entry</div>
+                                        <div class="feature-description">Fixed manual entry issues where calendar wasn't reflecting the logs correctly</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item fixed">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Country Stay</div>
+                                        <div class="feature-description">Country Stay new year split bug fix</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item fixed">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Donation View</div>
+                                        <div class="feature-description">Small update to donation view</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
-                <h3 class="feature-title">Future Logs Visualization</h3>
-                <p class="feature-description">Future logs are shown with reduced opacity</p>
-            </div>
 
-            <div class="feature-card new-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-star"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Early Access Log View</h3>
-                <p class="feature-description">*Early access log view improvements + tsv export</p>
             </div>
-
-            <div class="feature-card new-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-star"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Early Access Map View</h3>
-                <p class="feature-description">*Early access map view added</p>
-            </div>
-
-            <div class="feature-card improved-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-trending-up"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Launch Performance</h3>
-                <p class="feature-description">Launch and manual log performance improvements</p>
-            </div>
-
-            <div class="feature-card improved-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-trending-up"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Location Change Threshold</h3>
-                <p class="feature-description">Updated Location Change threshold steps</p>
-            </div>
-
-            <div class="feature-card fixed-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-check-circle"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Manual Entry</h3>
-                <p class="feature-description">Fixed manual entry issues where calendar wasn't reflecting the logs correctly</p>
-            </div>
-
-            <div class="feature-card fixed-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-check-circle"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Country Stay</h3>
-                <p class="feature-description">Country Stay new year split bug fix</p>
-            </div>
-
-            <div class="feature-card fixed-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-check-circle"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Donation View</h3>
-                <p class="feature-description">Small update to donation view</p>
-            </div>
-
         </div>
     </section>
 
     <!-- Version 1.1.16  -->
-    <section class="version-section " id="v1.1.16">
-        <div class="version-header">
-            <div class="version-number-badge ">
-                <span class="version-number">v1.1.16</span>
-                
-                <span class="version-date">Released: February 3, 2025</span>
+    <section class="version-section " id="v1.1.16" data-version="1.1.16">
+        <div class="version-header" onclick="toggleVersion('1.1.16')">
+            <div class="version-title-row">
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.16</span>
+                            
+                        </div>
+                        <div class="version-date">February 2, 2025</div>
+                    </div>
+                    <h2 class="version-headline">New sharing feature :)</h2>
+                </div>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
             </div>
-            <h2 class="version-headline">New sharing feature :)</h2>
+            
+            <div class="version-summary-row">
+                <p class="version-summary">Share your travel stats and achievements with friends and on social media.</p>
+            </div>
         </div>
 
-        <div class="features-grid">
+        <div class="version-details">
+            <div class="details-content">
+                <div class="details-text">
 
-            <div class="feature-card new-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-star"></use>
-                    </svg>
+                    <div class="features-list">
+
+                        <div class="feature-category">
+                            <h3 class="category-title new">
+                                <svg class="category-icon">
+                                    <use href="#icon-star"></use>
+                                </svg>
+                                New Features
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item new">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Sharing Feature</div>
+                                        <div class="feature-description">Share your travel stats and achievements</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
-                <h3 class="feature-title">Sharing Feature</h3>
-                <p class="feature-description">Share your travel stats and achievements</p>
-            </div>
 
+            </div>
         </div>
     </section>
 
     <!-- Version 1.1.15  -->
-    <section class="version-section " id="v1.1.15">
-        <div class="version-header">
-            <div class="version-number-badge ">
-                <span class="version-number">v1.1.15</span>
-                
-                <span class="version-date">Released: February 1, 2025</span>
+    <section class="version-section " id="v1.1.15" data-version="1.1.15">
+        <div class="version-header" onclick="toggleVersion('1.1.15')">
+            <div class="version-title-row">
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.15</span>
+                            
+                        </div>
+                        <div class="version-date">January 31, 2025</div>
+                    </div>
+                    <h2 class="version-headline">hola! :) added Spanish localisation</h2>
+                </div>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
             </div>
-            <h2 class="version-headline">hola! :) added Spanish localisation</h2>
+            
+            <div class="version-summary-row">
+                <p class="version-summary">Atlas Logged is now fully available in Spanish with complete language support throughout the app.</p>
+            </div>
         </div>
 
-        <div class="features-grid">
+        <div class="version-details">
+            <div class="details-content">
+                <div class="details-text">
 
-            <div class="feature-card new-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-star"></use>
-                    </svg>
+                    <div class="features-list">
+
+                        <div class="feature-category">
+                            <h3 class="category-title new">
+                                <svg class="category-icon">
+                                    <use href="#icon-star"></use>
+                                </svg>
+                                New Features
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item new">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Spanish Localization</div>
+                                        <div class="feature-description">Full Spanish language support</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
-                <h3 class="feature-title">Spanish Localization</h3>
-                <p class="feature-description">Full Spanish language support</p>
-            </div>
 
+            </div>
         </div>
     </section>
 
     <!-- Version 1.1.14  -->
-    <section class="version-section " id="v1.1.14">
-        <div class="version-header">
-            <div class="version-number-badge ">
-                <span class="version-number">v1.1.14</span>
-                
-                <span class="version-date">Released: January 28, 2025</span>
+    <section class="version-section " id="v1.1.14" data-version="1.1.14">
+        <div class="version-header" onclick="toggleVersion('1.1.14')">
+            <div class="version-title-row">
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.14</span>
+                            
+                        </div>
+                        <div class="version-date">January 27, 2025</div>
+                    </div>
+                    <h2 class="version-headline">minor bug fixes</h2>
+                </div>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
             </div>
-            <h2 class="version-headline">minor bug fixes</h2>
+            
+            <div class="version-summary-row">
+                <p class="version-summary">Various stability improvements and minor bug fixes to enhance app reliability.</p>
+            </div>
         </div>
 
-        <div class="features-grid">
+        <div class="version-details">
+            <div class="details-content">
+                <div class="details-text">
 
-            <div class="feature-card fixed-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-check-circle"></use>
-                    </svg>
+                    <div class="features-list">
+
+                        <div class="feature-category">
+                            <h3 class="category-title fixed">
+                                <svg class="category-icon">
+                                    <use href="#icon-check-circle"></use>
+                                </svg>
+                                Bug Fixes
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item fixed">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Bug Fixes</div>
+                                        <div class="feature-description">Various minor bug fixes and stability improvements</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
-                <h3 class="feature-title">Bug Fixes</h3>
-                <p class="feature-description">Various minor bug fixes and stability improvements</p>
-            </div>
 
+            </div>
         </div>
     </section>
 
     <!-- Version 1.1.13  -->
-    <section class="version-section " id="v1.1.13">
-        <div class="version-header">
-            <div class="version-number-badge ">
-                <span class="version-number">v1.1.13</span>
-                
-                <span class="version-date">Released: January 25, 2025</span>
+    <section class="version-section " id="v1.1.13" data-version="1.1.13">
+        <div class="version-header" onclick="toggleVersion('1.1.13')">
+            <div class="version-title-row">
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.13</span>
+                            
+                        </div>
+                        <div class="version-date">January 24, 2025</div>
+                    </div>
+                    <h2 class="version-headline">minor bug fixes</h2>
+                </div>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
             </div>
-            <h2 class="version-headline">minor bug fixes</h2>
+            
+            <div class="version-summary-row">
+                <p class="version-summary">Stability improvements and bug fixes for a smoother experience.</p>
+            </div>
         </div>
 
-        <div class="features-grid">
+        <div class="version-details">
+            <div class="details-content">
+                <div class="details-text">
 
-            <div class="feature-card fixed-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-check-circle"></use>
-                    </svg>
+                    <div class="features-list">
+
+                        <div class="feature-category">
+                            <h3 class="category-title fixed">
+                                <svg class="category-icon">
+                                    <use href="#icon-check-circle"></use>
+                                </svg>
+                                Bug Fixes
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item fixed">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Bug Fixes</div>
+                                        <div class="feature-description">Various minor bug fixes and stability improvements</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
-                <h3 class="feature-title">Bug Fixes</h3>
-                <p class="feature-description">Various minor bug fixes and stability improvements</p>
-            </div>
 
+            </div>
         </div>
     </section>
 
     <!-- Version 1.1.12  -->
-    <section class="version-section " id="v1.1.12">
-        <div class="version-header">
-            <div class="version-number-badge ">
-                <span class="version-number">v1.1.12</span>
-                
-                <span class="version-date">Released: January 22, 2025</span>
+    <section class="version-section " id="v1.1.12" data-version="1.1.12">
+        <div class="version-header" onclick="toggleVersion('1.1.12')">
+            <div class="version-title-row">
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.12</span>
+                            
+                        </div>
+                        <div class="version-date">January 21, 2025</div>
+                    </div>
+                    <h2 class="version-headline">New Country Stays and Statistics views in the History tab + some general UI and stability updates :)</h2>
+                </div>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
             </div>
-            <h2 class="version-headline">New Country Stays and Statistics views in the History tab + some general UI and stability updates :)</h2>
+            
+            <div class="version-summary-row">
+                <p class="version-summary">Introducing new timeline and statistics views in the History tab, plus general UI polish and stability improvements throughout the app.</p>
+            </div>
         </div>
 
-        <div class="features-grid">
+        <div class="version-details">
+            <div class="details-content">
+                <div class="details-text">
 
-            <div class="feature-card new-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-star"></use>
-                    </svg>
+                    <div class="features-list">
+
+                        <div class="feature-category">
+                            <h3 class="category-title new">
+                                <svg class="category-icon">
+                                    <use href="#icon-star"></use>
+                                </svg>
+                                New Features
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item new">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Country Stays View</div>
+                                        <div class="feature-description">New timeline view showing your country stays</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item new">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Statistics View</div>
+                                        <div class="feature-description">Enhanced statistics view in History tab</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="feature-category">
+                            <h3 class="category-title improved">
+                                <svg class="category-icon">
+                                    <use href="#icon-trending-up"></use>
+                                </svg>
+                                Improvements
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item improved">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">UI Updates</div>
+                                        <div class="feature-description">General UI improvements and polish</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item improved">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Stability</div>
+                                        <div class="feature-description">Various stability improvements</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
-                <h3 class="feature-title">Country Stays View</h3>
-                <p class="feature-description">New timeline view showing your country stays</p>
-            </div>
 
-            <div class="feature-card new-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-star"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Statistics View</h3>
-                <p class="feature-description">Enhanced statistics view in History tab</p>
             </div>
-
-            <div class="feature-card improved-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-trending-up"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">UI Updates</h3>
-                <p class="feature-description">General UI improvements and polish</p>
-            </div>
-
-            <div class="feature-card improved-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-trending-up"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Stability</h3>
-                <p class="feature-description">Various stability improvements</p>
-            </div>
-
         </div>
     </section>
 
     <!-- Version 1.1.11  -->
-    <section class="version-section " id="v1.1.11">
-        <div class="version-header">
-            <div class="version-number-badge ">
-                <span class="version-number">v1.1.11</span>
-                
-                <span class="version-date">Released: December 15, 2024</span>
+    <section class="version-section " id="v1.1.11" data-version="1.1.11">
+        <div class="version-header" onclick="toggleVersion('1.1.11')">
+            <div class="version-title-row">
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.11</span>
+                            
+                        </div>
+                        <div class="version-date">December 14, 2024</div>
+                    </div>
+                    <h2 class="version-headline">Performance improvements and bug fixes and a new Country Stays screen showing a timeline of your travels.</h2>
+                </div>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
             </div>
-            <h2 class="version-headline">Performance improvements and bug fixes and a new Country Stays screen showing a timeline of your travels.</h2>
+            
+            <div class="version-summary-row">
+                <p class="version-summary">New Country Stays timeline screen visualizes your travel history, alongside performance optimizations and stability improvements.</p>
+            </div>
         </div>
 
-        <div class="features-grid">
+        <div class="version-details">
+            <div class="details-content">
+                <div class="details-text">
 
-            <div class="feature-card new-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-star"></use>
-                    </svg>
+                    <div class="features-list">
+
+                        <div class="feature-category">
+                            <h3 class="category-title new">
+                                <svg class="category-icon">
+                                    <use href="#icon-star"></use>
+                                </svg>
+                                New Features
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item new">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Country Stays Timeline</div>
+                                        <div class="feature-description">New screen showing a timeline of your travels</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="feature-category">
+                            <h3 class="category-title improved">
+                                <svg class="category-icon">
+                                    <use href="#icon-trending-up"></use>
+                                </svg>
+                                Improvements
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item improved">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Performance</div>
+                                        <div class="feature-description">General performance improvements</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="feature-category">
+                            <h3 class="category-title fixed">
+                                <svg class="category-icon">
+                                    <use href="#icon-check-circle"></use>
+                                </svg>
+                                Bug Fixes
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item fixed">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Bug Fixes</div>
+                                        <div class="feature-description">Various bug fixes and stability improvements</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
-                <h3 class="feature-title">Country Stays Timeline</h3>
-                <p class="feature-description">New screen showing a timeline of your travels</p>
-            </div>
 
-            <div class="feature-card improved-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-trending-up"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Performance</h3>
-                <p class="feature-description">General performance improvements</p>
             </div>
-
-            <div class="feature-card fixed-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-check-circle"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Bug Fixes</h3>
-                <p class="feature-description">Various bug fixes and stability improvements</p>
-            </div>
-
         </div>
     </section>
 
     <!-- Version 1.1.1  -->
-    <section class="version-section " id="v1.1.1">
-        <div class="version-header">
-            <div class="version-number-badge ">
-                <span class="version-number">v1.1.1</span>
-                
-                <span class="version-date">Released: November 15, 2024</span>
+    <section class="version-section " id="v1.1.1" data-version="1.1.1">
+        <div class="version-header" onclick="toggleVersion('1.1.1')">
+            <div class="version-title-row">
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1.1</span>
+                            
+                        </div>
+                        <div class="version-date">November 14, 2024</div>
+                    </div>
+                    <h2 class="version-headline">Bug fixes and performance improvements</h2>
+                </div>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
             </div>
-            <h2 class="version-headline">Bug fixes and performance improvements</h2>
+            
+            <div class="version-summary-row">
+                <p class="version-summary">General performance optimizations and bug fixes to improve overall app stability.</p>
+            </div>
         </div>
 
-        <div class="features-grid">
+        <div class="version-details">
+            <div class="details-content">
+                <div class="details-text">
 
-            <div class="feature-card improved-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-trending-up"></use>
-                    </svg>
+                    <div class="features-list">
+
+                        <div class="feature-category">
+                            <h3 class="category-title improved">
+                                <svg class="category-icon">
+                                    <use href="#icon-trending-up"></use>
+                                </svg>
+                                Improvements
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item improved">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Performance</div>
+                                        <div class="feature-description">General performance improvements</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="feature-category">
+                            <h3 class="category-title fixed">
+                                <svg class="category-icon">
+                                    <use href="#icon-check-circle"></use>
+                                </svg>
+                                Bug Fixes
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item fixed">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Bug Fixes</div>
+                                        <div class="feature-description">Various bug fixes</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
-                <h3 class="feature-title">Performance</h3>
-                <p class="feature-description">General performance improvements</p>
-            </div>
 
-            <div class="feature-card fixed-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-check-circle"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Bug Fixes</h3>
-                <p class="feature-description">Various bug fixes</p>
             </div>
-
         </div>
     </section>
 
     <!-- Version 1.1  -->
-    <section class="version-section " id="v1.1">
-        <div class="version-header">
-            <div class="version-number-badge ">
-                <span class="version-number">v1.1</span>
-                
-                <span class="version-date">Released: November 1, 2024</span>
+    <section class="version-section " id="v1.1" data-version="1.1">
+        <div class="version-header" onclick="toggleVersion('1.1')">
+            <div class="version-title-row">
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.1</span>
+                            
+                        </div>
+                        <div class="version-date">October 31, 2024</div>
+                    </div>
+                    <h2 class="version-headline">Bug fixes, performance improvements and a clearer UI for adding new logs.</h2>
+                </div>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
             </div>
-            <h2 class="version-headline">Bug fixes, performance improvements and a clearer UI for adding new logs.</h2>
+            
+            <div class="version-summary-row">
+                <p class="version-summary">Improved interface for adding logs makes manual entry more intuitive, plus performance enhancements and bug fixes.</p>
+            </div>
         </div>
 
-        <div class="features-grid">
+        <div class="version-details">
+            <div class="details-content">
+                <div class="details-text">
 
-            <div class="feature-card improved-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-trending-up"></use>
-                    </svg>
+                    <div class="features-list">
+
+                        <div class="feature-category">
+                            <h3 class="category-title improved">
+                                <svg class="category-icon">
+                                    <use href="#icon-trending-up"></use>
+                                </svg>
+                                Improvements
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item improved">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">UI for Adding Logs</div>
+                                        <div class="feature-description">Clearer interface for adding new logs</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item improved">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Performance</div>
+                                        <div class="feature-description">General performance improvements</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="feature-category">
+                            <h3 class="category-title fixed">
+                                <svg class="category-icon">
+                                    <use href="#icon-check-circle"></use>
+                                </svg>
+                                Bug Fixes
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item fixed">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Bug Fixes</div>
+                                        <div class="feature-description">Various bug fixes</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
-                <h3 class="feature-title">UI for Adding Logs</h3>
-                <p class="feature-description">Clearer interface for adding new logs</p>
-            </div>
 
-            <div class="feature-card improved-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-trending-up"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Performance</h3>
-                <p class="feature-description">General performance improvements</p>
             </div>
-
-            <div class="feature-card fixed-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-check-circle"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Bug Fixes</h3>
-                <p class="feature-description">Various bug fixes</p>
-            </div>
-
         </div>
     </section>
 
     <!-- Version 1.0  -->
-    <section class="version-section " id="v1.0">
-        <div class="version-header">
-            <div class="version-number-badge ">
-                <span class="version-number">v1.0</span>
-                
-                <span class="version-date">Released: October 1, 2024</span>
+    <section class="version-section " id="v1.0" data-version="1.0">
+        <div class="version-header" onclick="toggleVersion('1.0')">
+            <div class="version-title-row">
+                <div class="version-meta-left">
+                    <div class="version-badges">
+                        <div class="version-number-badge ">
+                            <span>v1.0</span>
+                            
+                        </div>
+                        <div class="version-date">September 30, 2024</div>
+                    </div>
+                    <h2 class="version-headline">Initial Release</h2>
+                </div>
+                <svg class="expand-icon">
+                    <use href="#icon-chevron-down"></use>
+                </svg>
             </div>
-            <h2 class="version-headline">Initial Release</h2>
+            
+            <div class="version-summary-row">
+                <p class="version-summary">Track your country stays with complete privacy - your location data never leaves your device. View travel history with charts, statistics, and a privacy-first design.</p>
+            </div>
         </div>
 
-        <div class="features-grid">
+        <div class="version-details">
+            <div class="details-content">
+                <div class="details-text">
 
-            <div class="feature-card new-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-star"></use>
-                    </svg>
+                    <div class="features-list">
+
+                        <div class="feature-category">
+                            <h3 class="category-title new">
+                                <svg class="category-icon">
+                                    <use href="#icon-star"></use>
+                                </svg>
+                                New Features
+                            </h3>
+                            <div class="feature-items">
+
+                                <div class="feature-item new">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Country Stays Tracking</div>
+                                        <div class="feature-description">Track and visualize your country stays</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item new">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Travel History</div>
+                                        <div class="feature-description">View your travel history with charts and statistics</div>
+                                    </div>
+                                </div>
+
+                                <div class="feature-item new">
+                                    <div class="feature-bullet"></div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Privacy-First Design</div>
+                                        <div class="feature-description">Your location data stays on your device</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
-                <h3 class="feature-title">Country Stays Tracking</h3>
-                <p class="feature-description">Track and visualize your country stays</p>
-            </div>
 
-            <div class="feature-card new-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-star"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Travel History</h3>
-                <p class="feature-description">View your travel history with charts and statistics</p>
             </div>
-
-            <div class="feature-card new-feature">
-                <div class="feature-icon">
-                    <svg class="icon" width="24" height="24" fill="currentColor">
-                        <use href="#icon-star"></use>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Privacy-First Design</h3>
-                <p class="feature-description">Your location data stays on your device</p>
-            </div>
-
         </div>
     </section>
 
@@ -933,6 +1538,36 @@
                 })
             }
         })(document, "script");
+    </script>
+
+    <!-- Changelog Toggle Script -->
+    <script>
+        function toggleVersion(versionNum) {
+            const section = document.querySelector(`[data-version="${versionNum}"]`);
+            if (section) {
+                section.classList.toggle('expanded');
+            }
+        }
+
+        // Auto-expand first version (latest) on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstVersion = document.querySelector('.version-section');
+            if (firstVersion) {
+                firstVersion.classList.add('expanded');
+            }
+
+            // Check if there's a hash in the URL to expand that specific version
+            if (window.location.hash) {
+                const versionId = window.location.hash.substring(1); // Remove the '#'
+                if (versionId.startsWith('v')) {
+                    const targetVersion = document.getElementById(versionId);
+                    if (targetVersion && !targetVersion.classList.contains('expanded')) {
+                        targetVersion.classList.add('expanded');
+                        targetVersion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            }
+        });
     </script>
 
     <!-- Feature Flags -->
