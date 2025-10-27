@@ -614,11 +614,11 @@
 
                 <div class="roadmap-kanban">
                     <!-- Column 1: Community Requests -->
-                    <div class="roadmap-column">
+                    <div class="roadmap-column" data-column="community-requests">
                         <div class="roadmap-column-header">
                             <h3>🟣 Community Requests</h3>
                             <span class="status-badge community">Just Submitted</span>
-                            <p class="column-count">5 requests</p>
+                            <p class="column-count">Loading...</p>
                         </div>
 
                         <div class="feature-cards">
@@ -680,11 +680,11 @@
                     </div>
 
                     <!-- Column 2: Prioritising -->
-                    <div class="roadmap-column">
+                    <div class="roadmap-column" data-column="prioritising">
                         <div class="roadmap-column-header">
                             <h3>🟠 Prioritising</h3>
                             <span class="status-badge priority">We're Considering</span>
-                            <p class="column-count">3 features</p>
+                            <p class="column-count">Loading...</p>
                         </div>
 
                         <div class="feature-cards">
@@ -736,11 +736,11 @@
 
                 <div class="roadmap-kanban">
                     <!-- Column 3: Planned (Coming Soon) -->
-                    <div class="roadmap-column">
+                    <div class="roadmap-column" data-column="planned">
                         <div class="roadmap-column-header">
                             <h3>🔵 Planned</h3>
                             <span class="status-badge planned">Coming Soon</span>
-                            <p class="column-count">4 features</p>
+                            <p class="column-count">Loading...</p>
                         </div>
 
                         <div class="feature-cards">
@@ -791,11 +791,11 @@
                     </div>
 
                     <!-- Column 4: Building (Next Up) -->
-                    <div class="roadmap-column">
+                    <div class="roadmap-column" data-column="building">
                         <div class="roadmap-column-header">
                             <h3>🟡 Building</h3>
                             <span class="status-badge building">In Development</span>
-                            <p class="column-count">3 features</p>
+                            <p class="column-count">Loading...</p>
                         </div>
 
                         <div class="feature-cards">
@@ -835,11 +835,11 @@
                     </div>
 
                     <!-- Column 5: Exploring (Future Vision) -->
-                    <div class="roadmap-column">
+                    <div class="roadmap-column" data-column="exploring">
                         <div class="roadmap-column-header">
                             <h3>⚪ Exploring</h3>
                             <span class="status-badge exploring">Future Ideas</span>
-                            <p class="column-count">4 features</p>
+                            <p class="column-count">Loading...</p>
                         </div>
 
                         <div class="feature-cards">
@@ -1073,15 +1073,40 @@
             document.getElementById('desc-count').textContent = e.target.value.length;
         });
 
-        // Form submission (prototype - just shows alert)
-        document.getElementById('feature-form').addEventListener('submit', function(e) {
+        // Form submission (real API call)
+        document.getElementById('feature-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const title = document.getElementById('feature-title').value;
-            alert('✅ Feature submitted: "' + title + '"\n\n(This is a prototype - no actual submission yet!)');
-            modal.classList.remove('active');
-            this.reset();
-            document.getElementById('title-count').textContent = '0';
-            document.getElementById('desc-count').textContent = '0';
+            const description = document.getElementById('feature-description').value;
+            const email = document.getElementById('feature-email').value;
+
+            // Disable submit button
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
+
+            // Call API (if function exists)
+            if (typeof submitFeature === 'function') {
+                const success = await submitFeature(title, description, email);
+                if (success) {
+                    alert('✅ Feature submitted successfully! It will appear in "Community Requests" after a few seconds.');
+                    modal.classList.remove('active');
+                    this.reset();
+                    document.getElementById('title-count').textContent = '0';
+                    document.getElementById('desc-count').textContent = '0';
+                }
+            } else {
+                alert('✅ Feature submitted: "' + title + '"\n\n(API not loaded yet)');
+                modal.classList.remove('active');
+                this.reset();
+                document.getElementById('title-count').textContent = '0';
+                document.getElementById('desc-count').textContent = '0';
+            }
+
+            // Re-enable submit button
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
         });
 
         // ========================================
@@ -1179,6 +1204,9 @@
 
     <!-- Custom JavaScript -->
     <script src="js/main.js"></script>
+
+    <!-- Roadmap API Integration -->
+    <script src="js/roadmap-api.js"></script>
 </body>
 
 </html>
