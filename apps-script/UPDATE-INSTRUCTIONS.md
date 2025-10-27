@@ -29,6 +29,15 @@ After making changes to `Code.gs`, you need to update your deployed Apps Script:
 
 ## What Changed in This Update:
 
+### CORS Fix (CRITICAL):
+- Added `doOptions()` function to handle CORS preflight requests
+- Added CORS headers to all responses:
+  - `Access-Control-Allow-Origin: *`
+  - `Access-Control-Allow-Methods: GET, POST, OPTIONS`
+  - `Access-Control-Allow-Headers: Content-Type`
+- Fixes "Submission failed" error when submitting features from atlaslogged.com
+- **Required for feature submission to work!**
+
 ### Unvoting Feature:
 - Added `handleUnvote()` function for removing votes
 - Modified `doGet()` to handle 'unvote' action
@@ -36,7 +45,7 @@ After making changes to `Code.gs`, you need to update your deployed Apps Script:
 - Vote count decrements in Google Sheet
 - localStorage updated to remove vote
 
-### Server-Side Caching (NEW):
+### Server-Side Caching:
 - Added smart caching to `doGet()` - feature list cached for 5 minutes
 - Cache automatically invalidated when:
   - Someone votes (`handleVote`)
