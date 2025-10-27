@@ -272,36 +272,60 @@ async function voteForFeature(featureId, button) {
     }
 
     const votedFeatures = getVotedFeatures();
-
-    // Check localStorage first
-    if (votedFeatures.includes(featureId)) {
-        alert('You already voted for this feature!');
-        return;
-    }
+    const isVoted = button.classList.contains('voted');
 
     try {
-        // Call API to vote
-        const response = await fetch(`${API_URL}?action=vote&id=${featureId}&userAgent=${navigator.userAgent}&ipAddress=unknown`);
-        const result = await response.json();
+        if (isVoted) {
+            // UNVOTE - Remove vote
+            const response = await fetch(`${API_URL}?action=unvote&id=${featureId}&userAgent=${navigator.userAgent}&ipAddress=unknown`);
+            const result = await response.json();
 
-        if (result.success) {
-            // Update localStorage
-            votedFeatures.push(featureId);
-            saveVotedFeatures(votedFeatures);
+            if (result.success) {
+                // Remove from localStorage
+                const index = votedFeatures.indexOf(featureId);
+                if (index > -1) {
+                    votedFeatures.splice(index, 1);
+                    saveVotedFeatures(votedFeatures);
+                }
 
-            // Update button
-            button.classList.add('voted');
-            button.innerHTML = '✅ Voted';
+                // Update button
+                button.classList.remove('voted');
+                button.innerHTML = '⬆️ Vote';
 
-            // Update vote count
-            const voteCount = button.parentElement.querySelector('.vote-count');
-            if (voteCount) {
-                voteCount.textContent = result.data.newVotes + ' votes';
+                // Update vote count
+                const voteCount = button.parentElement.querySelector('.vote-count');
+                if (voteCount) {
+                    voteCount.textContent = result.data.newVotes + ' votes';
+                }
+
+                console.log('Vote removed:', result.data);
+            } else {
+                alert(result.message);
             }
-
-            console.log('Vote recorded:', result.data);
         } else {
-            alert(result.message);
+            // VOTE - Add vote
+            const response = await fetch(`${API_URL}?action=vote&id=${featureId}&userAgent=${navigator.userAgent}&ipAddress=unknown`);
+            const result = await response.json();
+
+            if (result.success) {
+                // Update localStorage
+                votedFeatures.push(featureId);
+                saveVotedFeatures(votedFeatures);
+
+                // Update button
+                button.classList.add('voted');
+                button.innerHTML = '✅ Voted';
+
+                // Update vote count
+                const voteCount = button.parentElement.querySelector('.vote-count');
+                if (voteCount) {
+                    voteCount.textContent = result.data.newVotes + ' votes';
+                }
+
+                console.log('Vote recorded:', result.data);
+            } else {
+                alert(result.message);
+            }
         }
     } catch (error) {
         console.error('Error voting:', error);

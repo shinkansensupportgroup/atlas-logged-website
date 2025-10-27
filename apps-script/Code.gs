@@ -170,6 +170,10 @@ function doGet(e) {
       return handleVote(e);
     }
 
+    if (action === 'unvote') {
+      return handleUnvote(e);
+    }
+
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
     const data = sheet.getDataRange().getValues();
 
@@ -245,6 +249,49 @@ function handleVote(e) {
   } catch (error) {
     Logger.log('Error in handleVote: ' + error);
     return createResponse(false, 'Voting error');
+  }
+}
+
+function handleUnvote(e) {
+  try {
+    const featureId = parseInt(e.parameter.id);
+
+    if (!featureId) {
+      return createResponse(false, 'Invalid feature ID');
+    }
+
+    const userHash = getUserHash(e);
+    const voteKey = 'vote_' + userHash + '_' + featureId;
+    const cache = CacheService.getScriptCache();
+
+    if (!cache.get(voteKey)) {
+      return createResponse(false, 'You have not voted for this feature');
+    }
+
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    const data = sheet.getDataRange().getValues();
+
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] === featureId) {
+        const currentVotes = data[i][3] || 0;
+        const newVotes = Math.max(0, currentVotes - 1);
+
+        sheet.getRange(i + 1, 4).setValue(newVotes);
+
+        cache.remove(voteKey);
+
+        return createResponse(true, 'Vote removed!', {
+          featureId: featureId,
+          newVotes: newVotes
+        });
+      }
+    }
+
+    return createResponse(false, 'Feature not found');
+
+  } catch (error) {
+    Logger.log('Error in handleUnvote: ' + error);
+    return createResponse(false, 'Unvoting error');
   }
 }
 
