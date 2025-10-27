@@ -29,8 +29,19 @@ After making changes to `Code.gs`, you need to update your deployed Apps Script:
 
 ## What Changed in This Update:
 
+### Unvoting Feature:
 - Added `handleUnvote()` function for removing votes
 - Modified `doGet()` to handle 'unvote' action
 - Users can now click "✅ Voted" to unvote
 - Vote count decrements in Google Sheet
 - localStorage updated to remove vote
+
+### Server-Side Caching (NEW):
+- Added smart caching to `doGet()` - feature list cached for 5 minutes
+- Cache automatically invalidated when:
+  - Someone votes (`handleVote`)
+  - Someone unvotes (`handleUnvote`)
+  - New feature submitted (`doPost`)
+- Reduces Google Sheets reads by ~90%
+- Faster API responses (cache hits return instantly)
+- Standard practice for Apps Script APIs

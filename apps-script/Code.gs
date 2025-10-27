@@ -154,6 +154,10 @@ function doPost(e) {
 
     cache.put('submit_' + userHash, 'true', SUBMIT_COOLDOWN_HOURS * 3600);
 
+    // Invalidate feature list cache since we added a new feature
+    cache.remove('feature_list');
+    Logger.log('Cache invalidated after new submission');
+
     return createResponse(true, 'Feature submitted successfully!', { id: newId });
 
   } catch (error) {
@@ -174,6 +178,19 @@ function doGet(e) {
       return handleUnvote(e);
     }
 
+    // Try to get cached feature list
+    const cache = CacheService.getScriptCache();
+    const cachedData = cache.get('feature_list');
+
+    if (cachedData) {
+      Logger.log('Returning cached feature list');
+      return ContentService
+        .createTextOutput(cachedData)
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Cache miss - fetch from sheet
+    Logger.log('Cache miss - fetching from sheet');
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
     const data = sheet.getDataRange().getValues();
 
@@ -201,7 +218,12 @@ function doGet(e) {
       return b.votes - a.votes;
     });
 
-    return createResponse(true, 'Features retrieved', features);
+    // Cache for 5 minutes (300 seconds)
+    const response = createResponse(true, 'Features retrieved', features);
+    const responseText = response.getContent();
+    cache.put('feature_list', responseText, 300);
+
+    return response;
 
   } catch (error) {
     Logger.log('Error in doGet: ' + error);
@@ -236,6 +258,10 @@ function handleVote(e) {
         sheet.getRange(i + 1, 4).setValue(newVotes);
 
         cache.put(voteKey, 'true', VOTE_COOLDOWN_HOURS * 3600);
+
+        // Invalidate feature list cache since vote count changed
+        cache.remove('feature_list');
+        Logger.log('Cache invalidated after vote');
 
         return createResponse(true, 'Vote recorded!', {
           featureId: featureId,
@@ -279,6 +305,10 @@ function handleUnvote(e) {
         sheet.getRange(i + 1, 4).setValue(newVotes);
 
         cache.remove(voteKey);
+
+        // Invalidate feature list cache since vote count changed
+        cache.remove('feature_list');
+        Logger.log('Cache invalidated after unvote');
 
         return createResponse(true, 'Vote removed!', {
           featureId: featureId,
