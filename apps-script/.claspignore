@@ -11,6 +11,9 @@ CLASP-SETUP.md
 .clasp.json
 .claspignore
 
+# Source files (Code.js is used by Apps Script, Code.gs is for git reference)
+Code.gs
+
 # Node.js
 package.json
 package-lock.json

@@ -190,11 +190,14 @@
     .details-video {
         position: sticky;
         top: 2rem;
+        display: flex;
         justify-content: center;
+        align-items: flex-start;
     }
 
     .video-container {
         max-width: 100%;
+        width: 100%;
     }
 }
 
