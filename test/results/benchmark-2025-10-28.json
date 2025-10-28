@@ -1,48 +1,48 @@
 {
-  "timestamp": "2025-10-28T13:22:48.726Z",
+  "timestamp": "2025-10-28T14:12:35.631Z",
   "runs": 5,
   "results": [
     {
       "name": "Warm Container",
-      "min": 1722,
-      "avg": 2213,
-      "max": 3660,
+      "min": 1709,
+      "avg": 3678,
+      "max": 6134,
       "runs": 5,
       "successful": 5,
       "failed": 0
     },
     {
       "name": "Vote (First Time)",
-      "min": 2473,
-      "avg": 3631,
-      "max": 4566,
+      "min": 3257,
+      "avg": 7538,
+      "max": 14057,
       "runs": 5,
       "successful": 5,
       "failed": 0
     },
     {
       "name": "Vote (Cached Row)",
-      "min": 2844,
-      "avg": 4588,
-      "max": 7308,
+      "min": 3180,
+      "avg": 4546,
+      "max": 7298,
       "runs": 5,
       "successful": 5,
       "failed": 0
     },
     {
       "name": "Get Features (Cache Hit)",
-      "min": 3172,
-      "avg": 5034,
-      "max": 7510,
+      "min": 3861,
+      "avg": 4659,
+      "max": 5723,
       "runs": 5,
       "successful": 5,
       "failed": 0
     },
     {
       "name": "Get Features (Cache Miss)",
-      "min": 1294,
-      "avg": 1448,
-      "max": 1542,
+      "min": 1737,
+      "avg": 4039,
+      "max": 7842,
       "runs": 5,
       "successful": 5,
       "failed": 0
