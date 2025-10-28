@@ -5,6 +5,11 @@ apps-script/.clasp.json
 node_modules/
 package-lock.json
 
+# Test Results
+test-results/
+test/e2e-results/
+test/coverage/
+
 # Editor
 .DS_Store
 .vscode/

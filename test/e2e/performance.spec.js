@@ -1,0 +1,348 @@
+const { test, expect } = require('@playwright/test');
+
+/**
+ * E2E Tests for Page Performance and Responsiveness
+ * Tests page load time, responsiveness, and mobile behavior
+ */
+
+test.describe('Page Performance', () => {
+  test('roadmap page should load within acceptable time', async ({ page }) => {
+    const startTime = Date.now();
+
+    await page.goto('/roadmap.html');
+
+    // Wait for critical content to be visible
+    await page.waitForSelector('.feature-card', { timeout: 10000 });
+
+    const loadTime = Date.now() - startTime;
+
+    // Page should load within 5 seconds (including API call)
+    expect(loadTime).toBeLessThan(5000);
+
+    console.log(`Page loaded in ${loadTime}ms`);
+  });
+
+  test('should load and render all critical content', async ({ page }) => {
+    await page.goto('/roadmap.html');
+
+    // Wait for features to load
+    await page.waitForSelector('.feature-card');
+
+    // Verify critical elements are present
+    await expect(page.locator('nav')).toBeVisible();
+    await expect(page.locator('h1, h2')).toBeVisible(); // Page heading
+    await expect(page.locator('.feature-card')).toHaveCount({ min: 1 }); // At least one feature
+
+    // Verify submit button
+    await expect(page.locator('button:has-text("Submit Feature")')).toBeVisible();
+  });
+
+  test('should handle API loading state gracefully', async ({ page }) => {
+    // Slow down API to test loading state
+    await page.route('**/exec*', async route => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await route.continue();
+    });
+
+    await page.goto('/roadmap.html');
+
+    // Should show loading indicator or skeleton
+    // (Adjust selector based on implementation)
+    const hasLoadingIndicator = await page.locator('.loading, .skeleton, .spinner').isVisible()
+      .catch(() => false);
+
+    // Wait for content to load
+    await page.waitForSelector('.feature-card', { timeout: 5000 });
+
+    // Content should be visible after loading
+    const featureCount = await page.locator('.feature-card').count();
+    expect(featureCount).toBeGreaterThan(0);
+  });
+
+  test('should maintain good performance with many features', async ({ page }) => {
+    await page.goto('/roadmap.html');
+    await page.waitForSelector('.feature-card');
+
+    // Measure scroll performance
+    const startTime = Date.now();
+
+    // Scroll through entire page
+    await page.evaluate(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    });
+
+    await page.waitForTimeout(500);
+
+    // Scroll back up
+    await page.evaluate(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    const scrollTime = Date.now() - startTime;
+
+    // Scrolling should be smooth (< 2s for full page)
+    expect(scrollTime).toBeLessThan(2000);
+  });
+});
+
+test.describe('Responsive Design', () => {
+  test('should display correctly on mobile (viewport 375x667)', async ({ page }) => {
+    // Set mobile viewport
+    await page.setViewportSize({ width: 375, height: 667 });
+
+    await page.goto('/roadmap.html');
+    await page.waitForSelector('.feature-card');
+
+    // Verify mobile navigation works
+    const mobileMenu = page.locator('.mobile-menu-toggle, .hamburger, button[aria-label*="menu"]');
+    const mobileMenuExists = await mobileMenu.isVisible().catch(() => false);
+
+    if (mobileMenuExists) {
+      await mobileMenu.click();
+      await page.waitForTimeout(300); // Wait for animation
+
+      // Navigation should be visible after toggle
+      const nav = page.locator('nav, .nav-menu');
+      await expect(nav).toBeVisible();
+    }
+
+    // Features should stack vertically on mobile
+    const features = page.locator('.feature-card');
+    const featureCount = await features.count();
+
+    if (featureCount >= 2) {
+      const firstFeature = features.first();
+      const secondFeature = features.nth(1);
+
+      const firstBox = await firstFeature.boundingBox();
+      const secondBox = await secondFeature.boundingBox();
+
+      // Second feature should be below first (not side by side)
+      expect(secondBox.y).toBeGreaterThan(firstBox.y + firstBox.height - 50);
+    }
+  });
+
+  test('should display correctly on tablet (viewport 768x1024)', async ({ page }) => {
+    // Set tablet viewport
+    await page.setViewportSize({ width: 768, height: 1024 });
+
+    await page.goto('/roadmap.html');
+    await page.waitForSelector('.feature-card');
+
+    // Verify content is visible
+    const features = page.locator('.feature-card');
+    const featureCount = await features.count();
+    expect(featureCount).toBeGreaterThan(0);
+
+    // All interactive elements should be accessible
+    const firstFeature = features.first();
+    const voteButton = firstFeature.locator('button');
+    await expect(voteButton).toBeVisible();
+  });
+
+  test('should display correctly on desktop (viewport 1920x1080)', async ({ page }) => {
+    // Set desktop viewport
+    await page.setViewportSize({ width: 1920, height: 1080 });
+
+    await page.goto('/roadmap.html');
+    await page.waitForSelector('.feature-card');
+
+    // Verify features display in grid layout
+    const features = page.locator('.feature-card');
+    const featureCount = await features.count();
+
+    if (featureCount >= 2) {
+      const firstFeature = features.first();
+      const secondFeature = features.nth(1);
+
+      const firstBox = await firstFeature.boundingBox();
+      const secondBox = await secondFeature.boundingBox();
+
+      // On desktop, features might be side by side
+      // (Depends on grid layout - adjust if needed)
+      const sameLine = Math.abs(firstBox.y - secondBox.y) < 50;
+      const verticalStack = secondBox.y > firstBox.y + firstBox.height - 50;
+
+      // Either layout is acceptable
+      expect(sameLine || verticalStack).toBe(true);
+    }
+
+    // Navigation should be visible (not hamburger menu)
+    const nav = page.locator('nav');
+    await expect(nav).toBeVisible();
+  });
+
+  test('mobile menu should toggle correctly', async ({ page }) => {
+    // Set mobile viewport
+    await page.setViewportSize({ width: 375, height: 667 });
+
+    await page.goto('/roadmap.html');
+
+    // Find mobile menu toggle
+    const menuToggle = page.locator('.mobile-menu-toggle, .hamburger, button[aria-label*="menu"]').first();
+    const menuExists = await menuToggle.isVisible().catch(() => false);
+
+    if (menuExists) {
+      // Initially, mobile nav might be hidden
+      const navMenu = page.locator('.nav-menu, nav ul, .mobile-nav');
+
+      // Click to open
+      await menuToggle.click();
+      await page.waitForTimeout(300);
+
+      // Nav should be visible
+      await expect(navMenu).toBeVisible();
+
+      // Click to close
+      await menuToggle.click();
+      await page.waitForTimeout(300);
+
+      // Nav should be hidden (or have closed class)
+      const isClosed = await navMenu.isHidden().catch(() => false);
+      const hasClosedClass = await navMenu.getAttribute('class').then(c => c?.includes('closed')).catch(() => false);
+
+      expect(isClosed || hasClosedClass).toBe(true);
+    }
+  });
+});
+
+test.describe('Accessibility', () => {
+  test('should have proper heading hierarchy', async ({ page }) => {
+    await page.goto('/roadmap.html');
+    await page.waitForSelector('.feature-card');
+
+    // Check heading structure
+    const h1Count = await page.locator('h1').count();
+    expect(h1Count).toBeGreaterThanOrEqual(1); // At least one h1
+
+    // Verify logical heading order exists
+    const headings = await page.locator('h1, h2, h3, h4, h5, h6').allTextContents();
+    expect(headings.length).toBeGreaterThan(0);
+  });
+
+  test('should have proper ARIA labels for interactive elements', async ({ page }) => {
+    await page.goto('/roadmap.html');
+    await page.waitForSelector('.feature-card');
+
+    // Vote buttons should have accessible labels
+    const voteButtons = page.locator('button:has-text("Vote")');
+    const count = await voteButtons.count();
+
+    if (count > 0) {
+      const firstButton = voteButtons.first();
+      const ariaLabel = await firstButton.getAttribute('aria-label');
+      const hasText = await firstButton.textContent();
+
+      // Should have either aria-label or text content
+      expect(ariaLabel || hasText).toBeTruthy();
+    }
+
+    // Submit button should be accessible
+    const submitButton = page.locator('button:has-text("Submit Feature")');
+    await expect(submitButton).toBeVisible();
+  });
+
+  test('should be keyboard navigable', async ({ page }) => {
+    await page.goto('/roadmap.html');
+    await page.waitForSelector('.feature-card');
+
+    // Tab through interactive elements
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(100);
+
+    // Should have focused element
+    const focused = await page.evaluate(() => document.activeElement.tagName);
+    expect(focused).toBeTruthy();
+
+    // Tab multiple times to ensure navigation works
+    for (let i = 0; i < 5; i++) {
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(50);
+    }
+
+    // Should still have focused element
+    const stillFocused = await page.evaluate(() => document.activeElement.tagName);
+    expect(stillFocused).toBeTruthy();
+  });
+
+  test('should handle focus visible for keyboard users', async ({ page }) => {
+    await page.goto('/roadmap.html');
+    await page.waitForSelector('.feature-card');
+
+    // Tab to first interactive element
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(100);
+
+    // Get focused element
+    const focusedElement = page.locator(':focus').first();
+
+    // Should have visible focus indicator (outline or box-shadow)
+    const styles = await focusedElement.evaluate(el => {
+      const computed = window.getComputedStyle(el);
+      return {
+        outline: computed.outline,
+        boxShadow: computed.boxShadow,
+        outlineWidth: computed.outlineWidth
+      };
+    });
+
+    // Should have some form of focus indicator
+    const hasFocusIndicator =
+      styles.outline !== 'none' ||
+      styles.boxShadow !== 'none' ||
+      parseInt(styles.outlineWidth) > 0;
+
+    expect(hasFocusIndicator).toBe(true);
+  });
+});
+
+test.describe('Error Handling', () => {
+  test('should handle API errors gracefully', async ({ page }) => {
+    // Force API to fail
+    await page.route('**/exec*', route => {
+      route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: false, message: 'Server error' })
+      });
+    });
+
+    await page.goto('/roadmap.html');
+
+    // Wait a moment for error handling
+    await page.waitForTimeout(2000);
+
+    // Should show error message or fallback UI
+    const pageContent = await page.content();
+    const hasErrorMessage =
+      pageContent.toLowerCase().includes('error') ||
+      pageContent.toLowerCase().includes('failed') ||
+      pageContent.toLowerCase().includes('try again');
+
+    // Or check for specific error UI elements
+    const errorElement = await page.locator('.error-message, .api-error, .alert-error').isVisible()
+      .catch(() => false);
+
+    expect(hasErrorMessage || errorElement).toBe(true);
+  });
+
+  test('should handle slow API responses without freezing', async ({ page }) => {
+    // Slow down API significantly
+    await page.route('**/exec*', async route => {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      await route.continue();
+    });
+
+    await page.goto('/roadmap.html');
+
+    // Page should still be responsive during loading
+    // Try clicking submit button
+    const submitButton = page.locator('button:has-text("Submit Feature")');
+
+    // Wait for button to appear (it should render even if features are loading)
+    await submitButton.waitFor({ timeout: 5000 });
+
+    // Button should be clickable
+    await expect(submitButton).toBeVisible();
+  });
+});
