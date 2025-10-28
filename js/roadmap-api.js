@@ -303,6 +303,37 @@ function restoreVotedState() {
 }
 
 // ========================================
+// SHOW VOTE ERROR (SUBTLE UI FEEDBACK)
+// ========================================
+
+function showVoteError(button, message) {
+    // Create error tooltip
+    const card = button.closest('.feature-card');
+    if (!card) return;
+
+    // Remove any existing error messages
+    const existingError = card.querySelector('.vote-error-message');
+    if (existingError) {
+        existingError.remove();
+    }
+
+    // Create new error message
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'vote-error-message';
+    errorDiv.textContent = message;
+
+    // Insert after vote section
+    const voteSection = button.parentElement;
+    voteSection.parentElement.insertBefore(errorDiv, voteSection.nextSibling);
+
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+        errorDiv.style.opacity = '0';
+        setTimeout(() => errorDiv.remove(), 300);
+    }, 4000);
+}
+
+// ========================================
 // VOTE FOR FEATURE (REAL API CALL)
 // ========================================
 
@@ -374,25 +405,60 @@ async function voteForFeature(featureId, button) {
 
             console.log(isVoted ? 'Vote removed:' : 'Vote recorded:', result.data);
         } else {
-            // ROLLBACK on error
-            button.innerHTML = originalButtonHTML;
-            button.className = originalButtonClasses;
-            button.disabled = false;
+            // Check if error is "already voted" - sync localStorage with server state
+            if (result.message && result.message.includes('already voted')) {
+                // Server says we voted, but localStorage didn't know
+                // Sync the state: mark as voted in localStorage
+                if (!votedFeatures.includes(featureId)) {
+                    votedFeatures.push(featureId);
+                    saveVotedFeatures(votedFeatures);
+                }
 
-            if (voteCount) {
-                voteCount.textContent = originalVoteText;
-            }
+                // Update UI to show voted state (keep the optimistic count)
+                button.classList.remove('loading');
+                button.classList.add('voted');
+                button.disabled = false;
+                button.innerHTML = '✅ Voted';
 
-            // Restore localStorage
-            if (isVoted) {
-                votedFeatures.push(featureId);
-            } else {
+                console.log('Synced vote state from server for feature', featureId);
+            } else if (result.message && result.message.includes('have not voted')) {
+                // Server says we didn't vote, but localStorage thought we did
+                // Sync the state: remove from localStorage
                 const index = votedFeatures.indexOf(featureId);
-                if (index > -1) votedFeatures.splice(index, 1);
-            }
-            saveVotedFeatures(votedFeatures);
+                if (index > -1) {
+                    votedFeatures.splice(index, 1);
+                    saveVotedFeatures(votedFeatures);
+                }
 
-            alert(result.message);
+                // Update UI to show unvoted state
+                button.classList.remove('loading');
+                button.classList.remove('voted');
+                button.disabled = false;
+                button.innerHTML = '⬆️ Vote';
+
+                console.log('Synced unvote state from server for feature', featureId);
+            } else {
+                // Other error - rollback optimistic update
+                button.innerHTML = originalButtonHTML;
+                button.className = originalButtonClasses;
+                button.disabled = false;
+
+                if (voteCount) {
+                    voteCount.textContent = originalVoteText;
+                }
+
+                // Restore localStorage
+                if (isVoted) {
+                    votedFeatures.push(featureId);
+                } else {
+                    const index = votedFeatures.indexOf(featureId);
+                    if (index > -1) votedFeatures.splice(index, 1);
+                }
+                saveVotedFeatures(votedFeatures);
+
+                // Show subtle error message instead of alert
+                showVoteError(button, result.message);
+            }
         }
     } catch (error) {
         // ROLLBACK on error
@@ -415,7 +481,8 @@ async function voteForFeature(featureId, button) {
         }
         saveVotedFeatures(votedFeatures);
 
-        alert('Voting failed. Please try again.');
+        // Show subtle error message instead of alert
+        showVoteError(button, 'Voting failed. Please try again.');
     }
 }
 
@@ -448,15 +515,13 @@ async function submitFeature(title, description, email) {
 
             // Reload features to show new submission with badge
             setTimeout(() => loadRoadmapFeatures(), 1000);
-            return true;
+            return { success: true, message: 'Feature submitted successfully!' };
         } else {
-            alert(result.message);
-            return false;
+            return { success: false, message: result.message };
         }
     } catch (error) {
         console.error('Error submitting feature:', error);
-        alert('Submission failed. Please try again.');
-        return false;
+        return { success: false, message: 'Submission failed. Please try again.' };
     }
 }
 

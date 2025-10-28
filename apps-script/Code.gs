@@ -196,31 +196,34 @@ function doGet(e) {
     // Cache miss - fetch from sheet
     Logger.log('Cache miss - fetching from sheet');
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-    const data = sheet.getDataRange().getValues();
 
-    if (data.length <= 1) {
+    // OPTIMIZATION: Read only the columns we need and specific range
+    const lastRow = sheet.getLastRow();
+    if (lastRow <= 1) {
       return createResponse(true, 'No features yet', []);
     }
 
-    const rows = data.slice(1);
+    // Read only columns A-G (ID, Title, Description, Votes, Status, Submitted, Email)
+    const data = sheet.getRange(2, 1, lastRow - 1, 7).getValues();
 
-    const features = rows.map(function(row) {
-      return {
-        id: row[0],
-        title: row[1],
-        description: row[2],
-        votes: row[3] || 0,
-        status: row[4],
-        submitted: row[5],
-        email: row[6]
-      };
-    })
-    .filter(function(f) {
-      return f.status !== 'Declined';
-    })
-    .sort(function(a, b) {
-      return b.votes - a.votes;
-    });
+    const features = data
+      .map(function(row) {
+        return {
+          id: row[0],
+          title: row[1],
+          description: row[2],
+          votes: row[3] || 0,
+          status: row[4],
+          submitted: row[5],
+          email: row[6]
+        };
+      })
+      .filter(function(f) {
+        return f.status !== 'Declined';
+      })
+      .sort(function(a, b) {
+        return b.votes - a.votes;
+      });
 
     // Cache for 5 minutes (300 seconds)
     const response = createResponse(true, 'Features retrieved', features);
@@ -252,29 +255,37 @@ function handleVote(e) {
     }
 
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-    const data = sheet.getDataRange().getValues();
 
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][0] === featureId) {
-        const currentVotes = data[i][3] || 0;
-        const newVotes = currentVotes + 1;
+    // OPTIMIZATION: Use cached row lookup instead of reading entire sheet
+    const rowIndex = getFeatureRow(sheet, featureId);
 
-        sheet.getRange(i + 1, 4).setValue(newVotes);
-
-        cache.put(voteKey, 'true', VOTE_COOLDOWN_HOURS * 3600);
-
-        // Invalidate feature list cache since vote count changed
-        cache.remove('feature_list');
-        Logger.log('Cache invalidated after vote');
-
-        return createResponse(true, 'Vote recorded!', {
-          featureId: featureId,
-          newVotes: newVotes
-        });
-      }
+    if (rowIndex === -1) {
+      return createResponse(false, 'Feature not found');
     }
 
-    return createResponse(false, 'Feature not found');
+    // OPTIMIZATION: Read only the votes cell (column 4)
+    const voteCell = sheet.getRange(rowIndex, 4);
+    const currentVotes = voteCell.getValue() || 0;
+    const newVotes = currentVotes + 1;
+
+    // Write updated vote count
+    voteCell.setValue(newVotes);
+
+    // Store user's vote
+    cache.put(voteKey, 'true', VOTE_COOLDOWN_HOURS * 3600);
+
+    // OPTIMIZATION: Update cached feature list instead of invalidating
+    const updated = updateCachedFeatureList(cache, featureId, newVotes);
+    if (!updated) {
+      // Fall back to invalidation if update failed
+      cache.remove('feature_list');
+      Logger.log('Cache invalidated after vote (update failed)');
+    }
+
+    return createResponse(true, 'Vote recorded!', {
+      featureId: featureId,
+      newVotes: newVotes
+    });
 
   } catch (error) {
     Logger.log('Error in handleVote: ' + error);
@@ -299,29 +310,37 @@ function handleUnvote(e) {
     }
 
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-    const data = sheet.getDataRange().getValues();
 
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][0] === featureId) {
-        const currentVotes = data[i][3] || 0;
-        const newVotes = Math.max(0, currentVotes - 1);
+    // OPTIMIZATION: Use cached row lookup instead of reading entire sheet
+    const rowIndex = getFeatureRow(sheet, featureId);
 
-        sheet.getRange(i + 1, 4).setValue(newVotes);
-
-        cache.remove(voteKey);
-
-        // Invalidate feature list cache since vote count changed
-        cache.remove('feature_list');
-        Logger.log('Cache invalidated after unvote');
-
-        return createResponse(true, 'Vote removed!', {
-          featureId: featureId,
-          newVotes: newVotes
-        });
-      }
+    if (rowIndex === -1) {
+      return createResponse(false, 'Feature not found');
     }
 
-    return createResponse(false, 'Feature not found');
+    // OPTIMIZATION: Read only the votes cell (column 4)
+    const voteCell = sheet.getRange(rowIndex, 4);
+    const currentVotes = voteCell.getValue() || 0;
+    const newVotes = Math.max(0, currentVotes - 1);
+
+    // Write updated vote count
+    voteCell.setValue(newVotes);
+
+    // Remove user's vote
+    cache.remove(voteKey);
+
+    // OPTIMIZATION: Update cached feature list instead of invalidating
+    const updated = updateCachedFeatureList(cache, featureId, newVotes);
+    if (!updated) {
+      // Fall back to invalidation if update failed
+      cache.remove('feature_list');
+      Logger.log('Cache invalidated after unvote (update failed)');
+    }
+
+    return createResponse(true, 'Vote removed!', {
+      featureId: featureId,
+      newVotes: newVotes
+    });
 
   } catch (error) {
     Logger.log('Error in handleUnvote: ' + error);
@@ -333,18 +352,97 @@ function handleUnvote(e) {
 // HELPER FUNCTIONS
 // ========================================
 
+/**
+ * Get the sheet row number for a feature ID
+ * Uses cache to avoid repeated lookups
+ */
+function getFeatureRow(sheet, featureId) {
+  const cache = CacheService.getScriptCache();
+  const cacheKey = 'feature_row_' + featureId;
+
+  // Check cache first
+  const cachedRow = cache.get(cacheKey);
+  if (cachedRow !== null) {
+    Logger.log('Row cache hit for feature ' + featureId);
+    return parseInt(cachedRow);
+  }
+
+  // Cache miss - read ID column and find row
+  Logger.log('Row cache miss for feature ' + featureId);
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) {
+    return -1; // Empty sheet
+  }
+
+  const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+
+  for (let i = 0; i < ids.length; i++) {
+    if (ids[i][0] === featureId) {
+      const rowIndex = i + 2; // +2 for header row and 0-indexed array
+
+      // Cache for 1 hour (row numbers rarely change)
+      cache.put(cacheKey, rowIndex.toString(), 3600);
+
+      return rowIndex;
+    }
+  }
+
+  return -1; // Not found
+}
+
+/**
+ * Update cached feature list with new vote count
+ * Instead of invalidating cache, update it directly
+ */
+function updateCachedFeatureList(cache, featureId, newVotes) {
+  const cachedFeatureList = cache.get('feature_list');
+  if (!cachedFeatureList) {
+    return false; // No cache to update
+  }
+
+  try {
+    const parsed = JSON.parse(cachedFeatureList);
+    const featuresList = parsed.data;
+
+    // Find and update the vote count in cached data
+    for (let i = 0; i < featuresList.length; i++) {
+      if (featuresList[i].id === featureId) {
+        featuresList[i].votes = newVotes;
+        break;
+      }
+    }
+
+    // Re-sort by votes (descending)
+    featuresList.sort(function(a, b) {
+      return b.votes - a.votes;
+    });
+
+    // Update cache with new sorted list
+    parsed.data = featuresList;
+    cache.put('feature_list', JSON.stringify(parsed), 300);
+
+    Logger.log('Updated cached feature list with new vote count for feature ' + featureId);
+    return true;
+  } catch (error) {
+    Logger.log('Failed to update cache, will invalidate: ' + error);
+    return false;
+  }
+}
+
 function getUserHash(e) {
   const userAgent = e.parameter.userAgent || 'unknown';
   const ipAddress = e.parameter.ipAddress || 'unknown';
 
-  const hash = Utilities.computeDigest(
-    Utilities.DigestAlgorithm.MD5,
-    userAgent + ipAddress
-  );
+  // Use faster FNV-1a hash instead of MD5 for better performance
+  const input = userAgent + ipAddress;
+  let hash = 2166136261; // FNV offset basis
 
-  return hash.map(function(byte) {
-    return ('0' + (byte & 0xFF).toString(16)).slice(-2);
-  }).join('');
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+  }
+
+  return (hash >>> 0).toString(36); // Convert to base36 string
 }
 
 function createResponse(success, message, data) {
