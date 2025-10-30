@@ -164,7 +164,9 @@ function buildCountryEntry(boundaryFeature, factbook, regionalFlags, airports) {
             area: factbookData.geography?.area || null,
             climate: factbookData.geography?.climate || null,
             terrain: factbookData.geography?.terrain || null,
-            elevation: factbookData.geography?.elevation || null
+            elevation: factbookData.geography?.elevation || null,
+            natural_hazards: factbookData.geography?.natural_hazards || null,
+            environment_issues: factbookData.geography?.environment_issues || null
         },
 
         // People & Society
@@ -172,7 +174,8 @@ function buildCountryEntry(boundaryFeature, factbook, regionalFlags, airports) {
             population: factbookData.people?.population || { total: props.population },
             nationality: factbookData.people?.nationality || null,
             languages: factbookData.people?.languages || null,
-            religions: factbookData.people?.religions || null
+            religions: factbookData.people?.religions || null,
+            median_age: factbookData.people?.median_age || null
         },
 
         // Government
@@ -183,7 +186,8 @@ function buildCountryEntry(boundaryFeature, factbook, regionalFlags, airports) {
                 name: factbookData.government?.capital?.name || null,
                 coordinates: capitalCoords
             },
-            independence: factbookData.government?.independence || null
+            independence: factbookData.government?.independence || null,
+            administrative_divisions: factbookData.government?.administrative_divisions || null
         },
 
         // Economy
