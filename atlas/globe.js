@@ -26,6 +26,8 @@ class GlobeViewer {
             autoRotate: false
         };
 
+        this.selectedObject = null;  // Track selected country/region
+
         this.init();
     }
 
@@ -402,8 +404,30 @@ class GlobeViewer {
         });
     }
 
+    highlightObject(object) {
+        // Clear previous selection
+        if (this.selectedObject) {
+            this.selectedObject.material.opacity = this.selectedObject.userData.originalOpacity;
+            this.selectedObject.material.color.set(this.selectedObject.userData.originalColor);
+        }
+
+        // Highlight new selection
+        if (object) {
+            this.selectedObject = object;
+            object.userData.originalOpacity = object.material.opacity;
+            object.userData.originalColor = object.material.color.getHex();
+            object.material.opacity = 1.0;
+            object.material.color.set(0xffff00);  // Yellow highlight
+        }
+    }
+
     handleClick(object) {
         const userData = object.userData;
+
+        // Highlight the clicked boundary
+        if (userData.type === 'country-boundary' || userData.type === 'region-boundary') {
+            this.highlightObject(object);
+        }
 
         if (userData.type === 'country-boundary') {
             const iso = (userData.properties.iso_a2 || '').replace(/\x00/g, '').trim();
@@ -413,10 +437,11 @@ class GlobeViewer {
         } else if (userData.type === 'region-boundary') {
             const iso = (userData.properties.iso_a2 || '').replace(/\x00/g, '').trim();
             const regionCode = (userData.properties.iso_3166_2 || '').replace(/\x00/g, '').trim();
-            console.log(`Clicked region: ${regionCode} (${userData.properties.name.replace(/\x00/g, '').trim()})`);
-            // Try to show parent country info
+            const regionName = (userData.properties.name || '').replace(/\x00/g, '').trim();
+            console.log(`Clicked region: ${regionCode} (${regionName})`);
+            // Try to show parent country info with region highlighted
             if (iso && this.countries[iso]) {
-                this.showCountryInfo(iso);
+                this.showCountryInfo(iso, null, regionName);
             }
         } else if (userData.type === 'airport') {
             this.showAirportInfo(userData.airport);
@@ -425,7 +450,7 @@ class GlobeViewer {
         }
     }
 
-    showCountryInfo(isoCode, highlightCapital = null) {
+    showCountryInfo(isoCode, highlightCapital = null, highlightRegion = null) {
         const country = this.countries[isoCode];
         if (!country) return;
 
@@ -437,6 +462,7 @@ class GlobeViewer {
         // Population
         const pop = country.people?.population?.total;
         const popStr = fmt(pop);
+        const medianAge = country.people?.median_age || null;
 
         // Capital
         const capitalName = country.government?.capital?.name || 'N/A';
@@ -449,6 +475,8 @@ class GlobeViewer {
 
         // Terrain and elevation
         const terrain = country.geography?.terrain || 'N/A';
+        const naturalHazards = country.geography?.natural_hazards || null;
+        const environmentIssues = country.geography?.environment_issues || null;
         const elevation = country.geography?.elevation;
         const highPoint = elevation?.highest_point ? `${elevation.highest_point.name} (${fmt(elevation.highest_point.elevation_m)}m)` : null;
         const lowPoint = elevation?.lowest_point ? `${elevation.lowest_point.name} (${fmt(elevation.lowest_point.elevation_m)}m)` : null;
@@ -542,6 +570,14 @@ class GlobeViewer {
                     <div class="data-label">Lowest Point</div>
                     <div class="data-value">${lowPoint}</div>
                 </div>` : ''}
+                ${naturalHazards ? `<div class="data-row">
+                    <div class="data-label">Natural Hazards</div>
+                    <div class="data-value">${naturalHazards}</div>
+                </div>` : ''}
+                ${environmentIssues ? `<div class="data-row">
+                    <div class="data-label">Environment Issues</div>
+                    <div class="data-value">${environmentIssues}</div>
+                </div>` : ''}
             </div>
 
             <div class="section">
@@ -550,6 +586,10 @@ class GlobeViewer {
                     <div class="data-label">Population</div>
                     <div class="data-value">${popStr}</div>
                 </div>
+                ${medianAge ? `<div class="data-row">
+                    <div class="data-label">Median Age</div>
+                    <div class="data-value">${medianAge} years</div>
+                </div>` : ''}
                 ${nationality ? `<div class="data-row">
                     <div class="data-label">Nationality</div>
                     <div class="data-value">${nationality}</div>
@@ -574,6 +614,10 @@ class GlobeViewer {
                     <div class="data-label">Type</div>
                     <div class="data-value">${country.government?.type || 'N/A'}</div>
                 </div>
+                ${country.government?.administrative_divisions ? `<div class="data-row">
+                    <div class="data-label">Administrative Divisions</div>
+                    <div class="data-value">${country.government.administrative_divisions}</div>
+                </div>` : ''}
             </div>
 
             ${gdp || gdpPerCapita || currency ? `

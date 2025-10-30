@@ -109,7 +109,9 @@ class FactbookExtractorISO:
                     'climate': self.extract_text(geo.get('Climate')),
                     'terrain': self.extract_text(geo.get('Terrain')),
                     'elevation': self.extract_elevation(geo.get('Elevation')),
-                    'natural_resources': self.extract_text(geo.get('Natural resources'))
+                    'natural_resources': self.extract_text(geo.get('Natural resources')),
+                    'natural_hazards': self.extract_text(geo.get('Natural hazards')),
+                    'environment_issues': self.extract_text(geo.get('Environment - current issues'))
                 }
 
             # Extract People and Society
@@ -119,7 +121,8 @@ class FactbookExtractorISO:
                     'population': self.extract_population(people.get('Population')),
                     'nationality': self.extract_text(people.get('Nationality', {}).get('noun')),
                     'languages': self.extract_languages(people.get('Languages')),
-                    'religions': self.extract_religions(people.get('Religions'))
+                    'religions': self.extract_religions(people.get('Religions')),
+                    'median_age': self.extract_text(people.get('Median age', {}).get('total'))
                 }
 
             # Extract Government
@@ -130,7 +133,8 @@ class FactbookExtractorISO:
                     'government_type': self.extract_text(gov.get('Government type')),
                     'capital': self.extract_capital(gov.get('Capital')),
                     'independence': self.extract_text(gov.get('Independence')),
-                    'national_holiday': self.extract_text(gov.get('National holiday'))
+                    'national_holiday': self.extract_text(gov.get('National holiday')),
+                    'administrative_divisions': self.extract_text(gov.get('Administrative divisions'))
                 }
 
             # Extract Economy
