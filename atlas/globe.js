@@ -349,28 +349,62 @@ class GlobeViewer {
 
                 const points = outerRing.map(([lon, lat]) => this.latLonToVector3(lat, lon, 100.3));
 
-                // Just render the outline - no fill mesh
+                // Use Earcut for proper triangulation
+                // First, flatten the 3D points for Earcut (it needs 2D coordinates)
+                const flatCoords = [];
+                points.forEach(p => {
+                    // Project to 2D using simple planar approximation
+                    flatCoords.push(p.x, p.y);
+                });
+
+                // Triangulate using Earcut
+                const indices = earcut(flatCoords, null, 2);
+
+                // Create vertices array
+                const vertices = [];
+                points.forEach(p => {
+                    vertices.push(p.x, p.y, p.z);
+                });
+
+                // Create fill mesh
+                const fillGeometry = new THREE.BufferGeometry();
+                fillGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                fillGeometry.setIndex(indices);
+
+                const fillMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x2a4a5a,
+                    transparent: true,
+                    opacity: 0.4,
+                    side: THREE.DoubleSide,
+                    depthWrite: false
+                });
+
+                const fillMesh = new THREE.Mesh(fillGeometry, fillMaterial);
+                fillMesh.userData = {
+                    type: 'country-boundary',
+                    properties: feature.properties
+                };
+                fillMesh.renderOrder = 1;
+                this.meshes.countryBoundaries.push(fillMesh);
+                this.globe.add(fillMesh);
+
+                // Add outline for definition
                 const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
                 const lineMaterial = new THREE.LineBasicMaterial({
                     color: 0x00ffff,
                     transparent: true,
-                    opacity: 0.8,
+                    opacity: 0.9,
                     linewidth: 2
                 });
 
                 const line = new THREE.Line(lineGeometry, lineMaterial);
-                line.userData = {
-                    type: 'country-boundary',
-                    properties: feature.properties
-                };
-
-                // Store in countryBoundaries for click detection
-                this.meshes.countryBoundaries.push(line);
+                line.userData = { type: 'country-outline', properties: feature.properties };
+                line.renderOrder = 2;
                 this.globe.add(line);
             }
         }
 
-        console.log(`Rendered ${this.meshes.countryBoundaries.length} country boundary lines`);
+        console.log(`Rendered ${this.meshes.countryBoundaries.length} country boundary meshes`);
     }
 
     renderRegionBoundaries() {
@@ -556,9 +590,9 @@ class GlobeViewer {
     highlightObject(object) {
         // Clear previous selection
         if (this.selectedObject) {
-            // Restore original color
-            this.selectedObject.material.color.setHex(0x00ffff);  // Cyan
-            this.selectedObject.material.opacity = 0.8;
+            // Restore original color and opacity
+            this.selectedObject.material.color.setHex(0x2a4a5a);  // Dark blue-gray
+            this.selectedObject.material.opacity = 0.4;
         }
 
         // Highlight new selection
@@ -566,15 +600,15 @@ class GlobeViewer {
             this.selectedObject = object;
             // Highlight with yellow and make more opaque
             object.material.color.setHex(0xffff00);  // Yellow
-            object.material.opacity = 1.0;
+            object.material.opacity = 0.6;
         }
     }
 
     clearSelection() {
         // Clear highlighted object
         if (this.selectedObject) {
-            this.selectedObject.material.color.setHex(0x00ffff);  // Cyan
-            this.selectedObject.material.opacity = 0.8;
+            this.selectedObject.material.color.setHex(0x2a4a5a);  // Dark blue-gray
+            this.selectedObject.material.opacity = 0.4;
             this.selectedObject = null;
         }
 
