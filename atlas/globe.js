@@ -347,55 +347,36 @@ class GlobeViewer {
                 const outerRing = polygon[0];
                 if (outerRing.length < 3) continue;
 
-                // Subdivide the polygon for better sphere conformance
-                const subdividedRing = this.subdividePolygon(outerRing, 2);
-                const points = subdividedRing.map(([lon, lat]) => this.latLonToVector3(lat, lon, 100.3));
+                const points = outerRing.map(([lon, lat]) => this.latLonToVector3(lat, lon, 100.3));
 
-                // Use lat/lon for 2D triangulation (proper spherical coordinates)
-                const flatCoords = [];
-                subdividedRing.forEach(([lon, lat]) => {
-                    flatCoords.push(lon, lat);
-                });
+                // Create a thick tube along the boundary using TubeGeometry
+                const curve = new THREE.CatmullRomCurve3(points, true); // closed curve
+                const tubeGeometry = new THREE.TubeGeometry(curve, points.length * 2, 0.8, 8, true);
 
-                // Triangulate using Earcut
-                const indices = earcut(flatCoords, null, 2);
-
-                // Create vertices array
-                const vertices = [];
-                points.forEach(p => {
-                    vertices.push(p.x, p.y, p.z);
-                });
-
-                // Create fill mesh
-                const fillGeometry = new THREE.BufferGeometry();
-                fillGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-                fillGeometry.setIndex(indices);
-                fillGeometry.computeVertexNormals();
-
-                const fillMaterial = new THREE.MeshBasicMaterial({
+                const tubeMaterial = new THREE.MeshBasicMaterial({
                     color: 0x2a4a5a,
                     transparent: true,
-                    opacity: 0.4,
+                    opacity: 0.5,
                     side: THREE.DoubleSide,
                     depthWrite: false
                 });
 
-                const fillMesh = new THREE.Mesh(fillGeometry, fillMaterial);
-                fillMesh.userData = {
+                const tubeMesh = new THREE.Mesh(tubeGeometry, tubeMaterial);
+                tubeMesh.userData = {
                     type: 'country-boundary',
                     properties: feature.properties
                 };
-                fillMesh.renderOrder = 1;
-                this.meshes.countryBoundaries.push(fillMesh);
-                this.globe.add(fillMesh);
+                tubeMesh.renderOrder = 1;
+                this.meshes.countryBoundaries.push(tubeMesh);
+                this.globe.add(tubeMesh);
 
-                // Add outline for definition
+                // Add thin outline on top for definition
                 const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
                 const lineMaterial = new THREE.LineBasicMaterial({
                     color: 0x00ffff,
                     transparent: true,
                     opacity: 0.9,
-                    linewidth: 2
+                    linewidth: 1
                 });
 
                 const line = new THREE.Line(lineGeometry, lineMaterial);
@@ -405,7 +386,7 @@ class GlobeViewer {
             }
         }
 
-        console.log(`Rendered ${this.meshes.countryBoundaries.length} country boundary meshes`);
+        console.log(`Rendered ${this.meshes.countryBoundaries.length} country boundary tubes`);
     }
 
     subdividePolygon(ring, divisions) {
