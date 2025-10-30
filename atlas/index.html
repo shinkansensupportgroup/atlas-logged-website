@@ -27,6 +27,10 @@
         #globe {
             width: 100%;
             height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
         }
 
         .panel {
@@ -37,6 +41,7 @@
             padding: 20px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
         }
 
         .header-panel {
@@ -242,6 +247,7 @@
             border-radius: 12px;
             backdrop-filter: blur(10px);
             transition: opacity 0.5s ease-out;
+            z-index: 100;
         }
 
         .loading.transparent {
