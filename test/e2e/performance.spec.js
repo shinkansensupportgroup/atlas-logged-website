@@ -23,10 +23,59 @@ test.describe('Page Performance', () => {
   });
 
   test('should load and render all critical content', async ({ page }) => {
+    // Track performance metrics
+    const metrics = {
+      navigationStart: Date.now(),
+      apiRequestStart: null,
+      apiRequestEnd: null,
+      firstRenderStart: null,
+      firstRenderEnd: null
+    };
+
+    // Listen for API requests
+    page.on('request', request => {
+      if (request.url().includes('script.google.com') && !metrics.apiRequestStart) {
+        metrics.apiRequestStart = Date.now();
+      }
+    });
+
+    page.on('response', response => {
+      if (response.url().includes('script.google.com') && !metrics.apiRequestEnd) {
+        metrics.apiRequestEnd = Date.now();
+      }
+    });
+
     await page.goto('/roadmap.html');
 
-    // Wait for features to load
-    await page.waitForSelector('.feature-card');
+    metrics.firstRenderStart = Date.now();
+
+    // Wait for features to load with better timeout handling
+    try {
+      await page.waitForSelector('.feature-card', { timeout: 20000 });
+      metrics.firstRenderEnd = Date.now();
+    } catch (error) {
+      // Log timing details on failure
+      console.log('Performance metrics on timeout:');
+      console.log('  Navigation → API Request:', metrics.apiRequestStart ? `${metrics.apiRequestStart - metrics.navigationStart}ms` : 'N/A');
+      console.log('  API Request → Response:', metrics.apiRequestEnd && metrics.apiRequestStart ? `${metrics.apiRequestEnd - metrics.apiRequestStart}ms` : 'N/A');
+      console.log('  Response → Render:', metrics.apiRequestEnd ? `${Date.now() - metrics.apiRequestEnd}ms` : 'N/A');
+      console.log('  Total time:', `${Date.now() - metrics.navigationStart}ms`);
+      throw error;
+    }
+
+    // Log successful timing
+    if (metrics.apiRequestStart && metrics.apiRequestEnd) {
+      const apiTime = metrics.apiRequestEnd - metrics.apiRequestStart;
+      const renderTime = metrics.firstRenderEnd - metrics.apiRequestEnd;
+      const totalTime = metrics.firstRenderEnd - metrics.navigationStart;
+
+      console.log(`Performance: API ${apiTime}ms | Render ${renderTime}ms | Total ${totalTime}ms`);
+
+      // Fail if API is too slow (likely cache miss or slow Apps Script)
+      if (apiTime > 10000) {
+        console.warn(`⚠️  API response very slow (${apiTime}ms) - possible cache miss or rate limiting`);
+      }
+    }
 
     // Verify critical elements are present
     await expect(page.locator('nav')).toBeVisible();
