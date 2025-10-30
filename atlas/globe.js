@@ -28,7 +28,88 @@ class GlobeViewer {
 
         this.selectedObject = null;  // Track selected country/region
 
+        // IndexedDB for caching
+        this.dbName = 'GlobeDataCache';
+        this.dbVersion = 1;
+        this.db = null;
+
         this.init();
+    }
+
+    async initDatabase() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(this.dbName, this.dbVersion);
+
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => {
+                this.db = request.result;
+                resolve(this.db);
+            };
+
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains('dataFiles')) {
+                    const store = db.createObjectStore('dataFiles', { keyPath: 'url' });
+                    store.createIndex('timestamp', 'timestamp', { unique: false });
+                }
+            };
+        });
+    }
+
+    async getCachedData(url) {
+        if (!this.db) return null;
+
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(['dataFiles'], 'readonly');
+            const store = transaction.objectStore('dataFiles');
+            const request = store.get(url);
+
+            request.onsuccess = () => {
+                const result = request.result;
+                if (result) {
+                    console.log(`✅ Cache hit: ${url}`);
+                    resolve(result.data);
+                } else {
+                    resolve(null);
+                }
+            };
+            request.onerror = () => resolve(null);
+        });
+    }
+
+    async setCachedData(url, data) {
+        if (!this.db) return;
+
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(['dataFiles'], 'readwrite');
+            const store = transaction.objectStore('dataFiles');
+            const request = store.put({
+                url,
+                data,
+                timestamp: Date.now()
+            });
+
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async fetchWithCache(url) {
+        // Try cache first
+        const cached = await this.getCachedData(url);
+        if (cached) {
+            return cached;
+        }
+
+        // Fetch from network
+        console.log(`📥 Fetching from network: ${url}`);
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // Store in cache
+        await this.setCachedData(url, data);
+
+        return data;
     }
 
     async init() {
@@ -36,6 +117,14 @@ class GlobeViewer {
         this.createGlobe();
         this.setupEventListeners();
         this.animate();
+
+        // Initialize IndexedDB cache
+        try {
+            await this.initDatabase();
+            console.log('✅ Cache initialized');
+        } catch (err) {
+            console.warn('⚠️  Cache unavailable, using network only:', err);
+        }
 
         // Start loading data and rendering progressively
         await this.loadData();
@@ -187,8 +276,8 @@ class GlobeViewer {
 
                 this.updateLoadingProgress(`Loading ${source.name} (${source.size})...`, progress);
 
-                const response = await fetch(source.url);
-                const data = await response.json();
+                // Use cache if available, otherwise fetch from network
+                const data = await this.fetchWithCache(source.url);
 
                 // Process data
                 switch(source.key) {
@@ -259,25 +348,15 @@ class GlobeViewer {
 
                 const points = outerRing.map(([lon, lat]) => this.latLonToVector3(lat, lon, 100.3));
 
-                // Create a simple flat polygon using earcut triangulation
-                // First, flatten the 3D points to 2D for triangulation
-                const flatVertices = [];
-                points.forEach(p => {
-                    flatVertices.push(p.x, p.y, p.z);
-                });
-
-                // Create a simple convex fill by connecting all points to first point
-                // This works well for most countries
+                // Create invisible clickable mesh using simple triangulation
                 const geometry = new THREE.BufferGeometry();
                 const vertices = [];
                 const indices = [];
 
-                // Add all vertices
                 for (let i = 0; i < points.length; i++) {
                     vertices.push(points[i].x, points[i].y, points[i].z);
                 }
 
-                // Create triangle fan from first vertex
                 for (let i = 1; i < points.length - 1; i++) {
                     indices.push(0, i, i + 1);
                 }
@@ -285,12 +364,13 @@ class GlobeViewer {
                 geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
                 geometry.setIndex(indices);
 
+                // Invisible clickable area
                 const fillMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x2a4a5a,  // Slightly lighter blue-gray
+                    color: 0x2a4a5a,
                     transparent: true,
-                    opacity: 0.5,
+                    opacity: 0.0,  // Invisible by default
                     side: THREE.DoubleSide,
-                    depthWrite: false  // Prevent z-fighting
+                    depthWrite: false
                 });
 
                 const fillMesh = new THREE.Mesh(geometry, fillMaterial);
@@ -298,24 +378,24 @@ class GlobeViewer {
                     type: 'country-boundary',
                     properties: feature.properties,
                     originalColor: 0x2a4a5a,
-                    originalOpacity: 0.5
+                    originalOpacity: 0.0
                 };
-                fillMesh.renderOrder = 1;  // Render fills first
+                fillMesh.renderOrder = 1;
                 this.meshes.countryBoundaries.push(fillMesh);
                 this.globe.add(fillMesh);
 
-                // Outline for visual definition
+                // Visible cyan outline
                 const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
                 const lineMaterial = new THREE.LineBasicMaterial({
-                    color: 0x00ffff,  // Cyan outline
+                    color: 0x00ffff,
                     transparent: true,
-                    opacity: 0.95,
+                    opacity: 0.8,
                     linewidth: 2
                 });
 
                 const line = new THREE.Line(lineGeometry, lineMaterial);
                 line.userData = { type: 'country-outline', properties: feature.properties };
-                line.renderOrder = 2;  // Render lines on top
+                line.renderOrder = 2;
                 this.globe.add(line);
             }
         }
@@ -341,7 +421,7 @@ class GlobeViewer {
 
                 const points = outerRing.map(([lon, lat]) => this.latLonToVector3(lat, lon, 100.2));
 
-                // Create flat polygon fill
+                // Invisible clickable mesh
                 const geometry = new THREE.BufferGeometry();
                 const vertices = [];
                 const indices = [];
@@ -358,9 +438,9 @@ class GlobeViewer {
                 geometry.setIndex(indices);
 
                 const fillMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x1a3a2a,  // Dark green fill
+                    color: 0x1a3a2a,
                     transparent: true,
-                    opacity: 0.4,
+                    opacity: 0.0,  // Invisible by default
                     side: THREE.DoubleSide,
                     depthWrite: false
                 });
@@ -370,18 +450,18 @@ class GlobeViewer {
                     type: 'region-boundary',
                     properties: feature.properties,
                     originalColor: 0x1a3a2a,
-                    originalOpacity: 0.4
+                    originalOpacity: 0.0
                 };
                 fillMesh.renderOrder = 1;
                 this.meshes.regionBoundaries.push(fillMesh);
                 this.globe.add(fillMesh);
 
-                // Outline
+                // Visible green outline
                 const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
                 const lineMaterial = new THREE.LineBasicMaterial({
-                    color: 0x00ff00,  // Green outline
+                    color: 0x00ff00,
                     transparent: true,
-                    opacity: 0.7,
+                    opacity: 0.6,
                     linewidth: 1
                 });
 
@@ -504,28 +584,15 @@ class GlobeViewer {
     highlightObject(object) {
         // Clear previous selection
         if (this.selectedObject) {
-            // Restore original color and opacity from userData
-            const original = this.selectedObject.userData;
-            if (original.originalColor !== undefined) {
-                this.selectedObject.material.color.setHex(original.originalColor);
-            }
-            if (original.originalOpacity !== undefined) {
-                this.selectedObject.material.opacity = original.originalOpacity;
-            }
+            // Restore original opacity (invisible)
+            this.selectedObject.material.opacity = 0.0;
         }
 
         // Highlight new selection
         if (object) {
             this.selectedObject = object;
-            // Store originals if not already stored
-            if (object.userData.originalColor === undefined) {
-                object.userData.originalColor = object.material.color.getHex();
-            }
-            if (object.userData.originalOpacity === undefined) {
-                object.userData.originalOpacity = object.material.opacity;
-            }
-            // Apply highlight
-            object.material.opacity = 0.8;
+            // Make visible with yellow tint when selected
+            object.material.opacity = 0.3;
             object.material.color.setHex(0xffff00);  // Yellow highlight
         }
     }
@@ -533,13 +600,7 @@ class GlobeViewer {
     clearSelection() {
         // Clear highlighted object
         if (this.selectedObject) {
-            const original = this.selectedObject.userData;
-            if (original.originalColor !== undefined) {
-                this.selectedObject.material.color.setHex(original.originalColor);
-            }
-            if (original.originalOpacity !== undefined) {
-                this.selectedObject.material.opacity = original.originalOpacity;
-            }
+            this.selectedObject.material.opacity = 0.0;  // Make invisible again
             this.selectedObject = null;
         }
 
