@@ -236,6 +236,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
+            min-width: 300px;
         }
 
         .spinner {
@@ -246,6 +247,11 @@
             height: 50px;
             animation: spin 1s linear infinite;
             margin: 0 auto 16px;
+        }
+
+        .loading-text {
+            font-size: 14px;
+            line-height: 1.6;
         }
 
         @keyframes spin {
@@ -274,7 +280,7 @@
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <div>Loading geographic data...</div>
+            <div class="loading-text">Initializing globe viewer...</div>
         </div>
 
         <div class="panel header-panel">

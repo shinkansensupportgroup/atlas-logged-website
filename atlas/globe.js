@@ -118,40 +118,113 @@ class GlobeViewer {
         this.scene.add(glow);
     }
 
+    updateLoadingProgress(message, progress) {
+        const loadingDiv = document.getElementById('loading');
+        const loadingText = loadingDiv.querySelector('div:last-child');
+        const spinner = loadingDiv.querySelector('.spinner');
+
+        if (loadingText) {
+            loadingText.innerHTML = `
+                <div style="margin-bottom: 8px;">${message}</div>
+                <div style="font-size: 12px; opacity: 0.7;">
+                    <div style="background: rgba(255,255,255,0.1); height: 4px; border-radius: 2px; overflow: hidden; margin-top: 8px;">
+                        <div style="background: linear-gradient(90deg, #667eea, #764ba2); height: 100%; width: ${progress}%; transition: width 0.3s;"></div>
+                    </div>
+                    <div style="margin-top: 4px;">${progress}% complete</div>
+                </div>
+            `;
+        }
+    }
+
     async loadData() {
         try {
-            // Load unified countries database
-            const countriesResponse = await fetch('resources/countries_v2.json');
-            const countriesData = await countriesResponse.json();
-            this.countries = countriesData.entities;
+            this.updateLoadingProgress('Loading geographic data...', 0);
 
-            // Load country boundaries GeoJSON
-            const boundariesResponse = await fetch('resources/countries_50m.geojson');
-            this.boundaries = await boundariesResponse.json();
+            // Define all data sources with metadata
+            const dataSources = [
+                {
+                    name: 'Countries Database',
+                    url: 'resources/countries_v2.json',
+                    size: '835 KB',
+                    key: 'countries'
+                },
+                {
+                    name: 'Country Boundaries',
+                    url: 'resources/countries_50m.geojson',
+                    size: '9.7 MB',
+                    key: 'boundaries'
+                },
+                {
+                    name: 'Regional Boundaries',
+                    url: 'resources/regions_10m.geojson',
+                    size: '25 MB',
+                    key: 'regions'
+                },
+                {
+                    name: 'Airports Database',
+                    url: 'resources/airports_iata.json',
+                    size: '2.1 MB',
+                    key: 'airports'
+                }
+            ];
 
-            // Load regional boundaries GeoJSON
-            const regionsResponse = await fetch('resources/regions_10m.geojson');
-            this.regions = await regionsResponse.json();
+            // Load all files in parallel with progress tracking
+            let completed = 0;
+            const results = await Promise.all(
+                dataSources.map(async (source) => {
+                    this.updateLoadingProgress(`Loading ${source.name} (${source.size})...`, Math.round((completed / dataSources.length) * 100));
 
-            // Load airports
-            const airportsResponse = await fetch('resources/airports_iata.json');
-            const airportsData = await airportsResponse.json();
-            this.airports = airportsData.airports;
+                    const response = await fetch(source.url);
+                    const data = await response.json();
 
-            console.log(`Loaded ${Object.keys(this.countries).length} countries`);
-            console.log(`Loaded ${this.boundaries.features.length} country boundaries`);
-            console.log(`Loaded ${this.regions.features.length} regional boundaries`);
-            console.log(`Loaded ${Object.keys(this.airports).length} airports`);
+                    completed++;
+                    this.updateLoadingProgress(`Loaded ${source.name}`, Math.round((completed / dataSources.length) * 100));
+
+                    return { key: source.key, data, name: source.name };
+                })
+            );
+
+            // Process loaded data
+            this.updateLoadingProgress('Processing data...', 100);
+
+            results.forEach(result => {
+                switch(result.key) {
+                    case 'countries':
+                        this.countries = result.data.entities;
+                        console.log(`✅ Loaded ${Object.keys(this.countries).length} countries`);
+                        break;
+                    case 'boundaries':
+                        this.boundaries = result.data;
+                        console.log(`✅ Loaded ${this.boundaries.features.length} country boundaries`);
+                        break;
+                    case 'regions':
+                        this.regions = result.data;
+                        console.log(`✅ Loaded ${this.regions.features.length} regional boundaries`);
+                        break;
+                    case 'airports':
+                        this.airports = result.data.airports;
+                        console.log(`✅ Loaded ${Object.keys(this.airports).length} airports`);
+                        break;
+                }
+            });
 
             // Render data on globe
+            this.updateLoadingProgress('Rendering globe...', 100);
             this.renderCountryBoundaries();
             this.renderRegionBoundaries();
             this.renderAirports();
             this.renderCapitals();
             this.updateStats();
 
+            // Hide loading screen
+            this.updateLoadingProgress('Complete!', 100);
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+            }, 500);
+
         } catch (error) {
             console.error('Error loading data:', error);
+            this.updateLoadingProgress(`Error: ${error.message}`, 0);
         }
     }
 
