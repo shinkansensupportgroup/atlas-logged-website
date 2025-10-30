@@ -34,10 +34,12 @@ class GlobeViewer {
     async init() {
         this.setupScene();
         this.createGlobe();
-        await this.loadData();
         this.setupEventListeners();
         this.animate();
-        document.getElementById('loading').style.display = 'none';
+
+        // Start loading data and rendering progressively
+        await this.loadData();
+        // Progressive rendering happens in loadData, which handles hiding the loading screen
     }
 
     setupScene() {
@@ -274,28 +276,73 @@ class GlobeViewer {
                 : feature.geometry.coordinates;
 
             for (const polygon of coordinates) {
-                for (const ring of polygon) {
-                    if (ring.length < 3) continue;
+                const outerRing = polygon[0];
+                if (outerRing.length < 3) continue;
 
-                    const points = ring.map(([lon, lat]) => this.latLonToVector3(lat, lon, 100.3));
+                const points = outerRing.map(([lon, lat]) => this.latLonToVector3(lat, lon, 100.3));
 
-                    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-                    const material = new THREE.LineBasicMaterial({
-                        color: 0x00ffff,  // Cyan for countries
-                        transparent: true,
-                        opacity: 0.95,
-                        linewidth: 2
-                    });
+                // Create triangulated filled mesh using ConvexGeometry approximation
+                // For simplicity, use a triangle fan from centroid
+                const centroid = new THREE.Vector3();
+                points.forEach(p => centroid.add(p));
+                centroid.divideScalar(points.length);
 
-                    const line = new THREE.Line(geometry, material);
-                    line.userData = { type: 'country-boundary', properties: feature.properties };
-                    this.meshes.countryBoundaries.push(line);
-                    this.globe.add(line);
+                const vertices = [];
+                const indices = [];
+
+                // Add centroid as first vertex
+                vertices.push(centroid.x, centroid.y, centroid.z);
+
+                // Add all boundary points
+                points.forEach(p => {
+                    vertices.push(p.x, p.y, p.z);
+                });
+
+                // Create triangle fan indices
+                for (let i = 1; i < points.length; i++) {
+                    indices.push(0, i, i + 1);
                 }
+                // Close the fan
+                indices.push(0, points.length, 1);
+
+                const geometry = new THREE.BufferGeometry();
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                geometry.setIndex(indices);
+                geometry.computeVertexNormals();
+
+                const fillMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x1a3a4a,  // Dark blue-gray fill
+                    transparent: true,
+                    opacity: 0.4,
+                    side: THREE.DoubleSide
+                });
+
+                const fillMesh = new THREE.Mesh(geometry, fillMaterial);
+                fillMesh.userData = {
+                    type: 'country-boundary',
+                    properties: feature.properties,
+                    originalColor: 0x1a3a4a,
+                    originalOpacity: 0.4
+                };
+                this.meshes.countryBoundaries.push(fillMesh);
+                this.globe.add(fillMesh);
+
+                // 2. Outline for visual definition
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                const lineMaterial = new THREE.LineBasicMaterial({
+                    color: 0x00ffff,  // Cyan outline
+                    transparent: true,
+                    opacity: 0.8,
+                    linewidth: 2
+                });
+
+                const line = new THREE.Line(lineGeometry, lineMaterial);
+                line.userData = { type: 'country-outline', properties: feature.properties };
+                this.globe.add(line);
             }
         }
 
-        console.log(`Rendered ${this.meshes.countryBoundaries.length} country boundary lines`);
+        console.log(`Rendered ${this.meshes.countryBoundaries.length} country boundary meshes`);
     }
 
     renderRegionBoundaries() {
@@ -311,28 +358,67 @@ class GlobeViewer {
                 : feature.geometry.coordinates;
 
             for (const polygon of coordinates) {
-                for (const ring of polygon) {
-                    if (ring.length < 3) continue;
+                const outerRing = polygon[0];
+                if (outerRing.length < 3) continue;
 
-                    const points = ring.map(([lon, lat]) => this.latLonToVector3(lat, lon, 100.2));
+                const points = outerRing.map(([lon, lat]) => this.latLonToVector3(lat, lon, 100.2));
 
-                    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-                    const material = new THREE.LineBasicMaterial({
-                        color: 0x00ff00,  // Green for regions/territories
-                        transparent: true,
-                        opacity: 0.6,
-                        linewidth: 1
-                    });
+                // Create triangulated filled mesh
+                const centroid = new THREE.Vector3();
+                points.forEach(p => centroid.add(p));
+                centroid.divideScalar(points.length);
 
-                    const line = new THREE.Line(geometry, material);
-                    line.userData = { type: 'region-boundary', properties: feature.properties };
-                    this.meshes.regionBoundaries.push(line);
-                    this.globe.add(line);
+                const vertices = [];
+                const indices = [];
+
+                vertices.push(centroid.x, centroid.y, centroid.z);
+                points.forEach(p => {
+                    vertices.push(p.x, p.y, p.z);
+                });
+
+                for (let i = 1; i < points.length; i++) {
+                    indices.push(0, i, i + 1);
                 }
+                indices.push(0, points.length, 1);
+
+                const geometry = new THREE.BufferGeometry();
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                geometry.setIndex(indices);
+                geometry.computeVertexNormals();
+
+                const fillMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x0a2a1a,  // Dark green fill
+                    transparent: true,
+                    opacity: 0.3,
+                    side: THREE.DoubleSide
+                });
+
+                const fillMesh = new THREE.Mesh(geometry, fillMaterial);
+                fillMesh.userData = {
+                    type: 'region-boundary',
+                    properties: feature.properties,
+                    originalColor: 0x0a2a1a,
+                    originalOpacity: 0.3
+                };
+                this.meshes.regionBoundaries.push(fillMesh);
+                this.globe.add(fillMesh);
+
+                // Outline
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                const lineMaterial = new THREE.LineBasicMaterial({
+                    color: 0x00ff00,  // Green outline
+                    transparent: true,
+                    opacity: 0.6,
+                    linewidth: 1
+                });
+
+                const line = new THREE.Line(lineGeometry, lineMaterial);
+                line.userData = { type: 'region-outline', properties: feature.properties };
+                this.globe.add(line);
             }
         }
 
-        console.log(`Rendered ${this.meshes.regionBoundaries.length} regional boundary lines`);
+        console.log(`Rendered ${this.meshes.regionBoundaries.length} regional boundary meshes`);
     }
 
     renderAirports() {
@@ -431,6 +517,12 @@ class GlobeViewer {
             if (intersects.length > 0) {
                 const object = intersects[0].object;
                 this.handleClick(object);
+            } else {
+                // Check if clicking on the ocean (globe itself)
+                const globeIntersects = raycaster.intersectObject(this.globe);
+                if (globeIntersects.length > 0) {
+                    this.clearSelection();
+                }
             }
         });
     }
@@ -438,18 +530,48 @@ class GlobeViewer {
     highlightObject(object) {
         // Clear previous selection
         if (this.selectedObject) {
-            this.selectedObject.material.opacity = this.selectedObject.userData.originalOpacity;
-            this.selectedObject.material.color.set(this.selectedObject.userData.originalColor);
+            // Restore original color and opacity from userData
+            const original = this.selectedObject.userData;
+            if (original.originalColor !== undefined) {
+                this.selectedObject.material.color.setHex(original.originalColor);
+            }
+            if (original.originalOpacity !== undefined) {
+                this.selectedObject.material.opacity = original.originalOpacity;
+            }
         }
 
         // Highlight new selection
         if (object) {
             this.selectedObject = object;
-            object.userData.originalOpacity = object.material.opacity;
-            object.userData.originalColor = object.material.color.getHex();
-            object.material.opacity = 1.0;
-            object.material.color.set(0xffff00);  // Yellow highlight
+            // Store originals if not already stored
+            if (object.userData.originalColor === undefined) {
+                object.userData.originalColor = object.material.color.getHex();
+            }
+            if (object.userData.originalOpacity === undefined) {
+                object.userData.originalOpacity = object.material.opacity;
+            }
+            // Apply highlight
+            object.material.opacity = 0.8;
+            object.material.color.setHex(0xffff00);  // Yellow highlight
         }
+    }
+
+    clearSelection() {
+        // Clear highlighted object
+        if (this.selectedObject) {
+            const original = this.selectedObject.userData;
+            if (original.originalColor !== undefined) {
+                this.selectedObject.material.color.setHex(original.originalColor);
+            }
+            if (original.originalOpacity !== undefined) {
+                this.selectedObject.material.opacity = original.originalOpacity;
+            }
+            this.selectedObject = null;
+        }
+
+        // Hide info panel
+        const panel = document.getElementById('infoPanel');
+        panel.classList.remove('visible');
     }
 
     handleClick(object) {
