@@ -142,121 +142,99 @@ class GlobeViewer {
 
     async loadData() {
         try {
-            this.updateLoadingProgress('Loading geographic data...', 0);
+            // Make loading screen transparent immediately so we can see rendering
+            document.getElementById('loading').classList.add('transparent');
 
-            // Define all data sources with metadata
+            // Define data sources in rendering order
             const dataSources = [
                 {
                     name: 'Countries Database',
                     url: 'resources/countries_v2.json',
-                    size: '835 KB',
-                    key: 'countries'
+                    size: '0.96 MB',
+                    key: 'countries',
+                    render: null  // Metadata only
                 },
                 {
                     name: 'Country Boundaries',
                     url: 'resources/countries_50m.geojson',
                     size: '9.7 MB',
-                    key: 'boundaries'
+                    key: 'boundaries',
+                    render: () => this.renderCountryBoundaries()
                 },
                 {
                     name: 'Regional Boundaries',
                     url: 'resources/regions_10m.geojson',
                     size: '25 MB',
-                    key: 'regions'
+                    key: 'regions',
+                    render: () => this.renderRegionBoundaries()
                 },
                 {
                     name: 'Airports Database',
                     url: 'resources/airports_iata.json',
                     size: '2.1 MB',
-                    key: 'airports'
+                    key: 'airports',
+                    render: () => {
+                        this.renderCapitals();
+                        this.renderAirports();
+                    }
                 }
             ];
 
-            // Load all files in parallel with progress tracking
-            let completed = 0;
-            const results = await Promise.all(
-                dataSources.map(async (source) => {
-                    this.updateLoadingProgress(`Loading ${source.name} (${source.size})...`, Math.round((completed / dataSources.length) * 100));
+            // Load and render sequentially
+            for (let i = 0; i < dataSources.length; i++) {
+                const source = dataSources[i];
+                const progress = Math.round((i / dataSources.length) * 100);
 
-                    const response = await fetch(source.url);
-                    const data = await response.json();
+                this.updateLoadingProgress(`Loading ${source.name} (${source.size})...`, progress);
 
-                    completed++;
-                    this.updateLoadingProgress(`Loaded ${source.name}`, Math.round((completed / dataSources.length) * 100));
+                const response = await fetch(source.url);
+                const data = await response.json();
 
-                    return { key: source.key, data, name: source.name };
-                })
-            );
-
-            // Process loaded data
-            this.updateLoadingProgress('Processing data...', 100);
-
-            results.forEach(result => {
-                switch(result.key) {
+                // Process data
+                switch(source.key) {
                     case 'countries':
-                        this.countries = result.data.entities;
+                        this.countries = data.entities;
                         console.log(`✅ Loaded ${Object.keys(this.countries).length} countries`);
                         break;
                     case 'boundaries':
-                        this.boundaries = result.data;
+                        this.boundaries = data;
                         console.log(`✅ Loaded ${this.boundaries.features.length} country boundaries`);
                         break;
                     case 'regions':
-                        this.regions = result.data;
+                        this.regions = data;
                         console.log(`✅ Loaded ${this.regions.features.length} regional boundaries`);
                         break;
                     case 'airports':
-                        this.airports = result.data.airports;
+                        this.airports = data.airports;
                         console.log(`✅ Loaded ${Object.keys(this.airports).length} airports`);
                         break;
                 }
-            });
 
-            // Make loading screen transparent to see rendering behind it
-            document.getElementById('loading').classList.add('transparent');
+                // Render immediately after loading
+                if (source.render) {
+                    const renderProgress = Math.round(((i + 0.5) / dataSources.length) * 100);
+                    this.updateLoadingProgress(`Rendering ${source.name.replace(' Database', '').replace(' Boundaries', '')}...`, renderProgress);
+                    await this.delay(100);  // Brief delay to show message
+                    source.render();
+                    await this.delay(300);  // Let user see the rendering
+                }
+            }
 
-            // Render data progressively with delays for visual effect
-            await this.renderProgressively();
+            // Update stats
+            this.updateStats();
+
+            // Hide loading screen
+            this.updateLoadingProgress('Complete!', 100);
+            await this.delay(500);
+            document.getElementById('loading').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+            }, 500);
 
         } catch (error) {
             console.error('Error loading data:', error);
             this.updateLoadingProgress(`Error: ${error.message}`, 0);
         }
-    }
-
-    async renderProgressively() {
-        // Progressive rendering with aesthetic order: structure → detail
-
-        // Step 1: Country boundaries (establish world map)
-        this.updateLoadingProgress('Rendering country boundaries (242)...', 100);
-        await this.delay(300);
-        this.renderCountryBoundaries();
-
-        // Step 2: Regional boundaries (add detail)
-        this.updateLoadingProgress('Rendering regional boundaries (493)...', 100);
-        await this.delay(500);
-        this.renderRegionBoundaries();
-
-        // Step 3: Capital cities (major landmarks)
-        this.updateLoadingProgress('Rendering capital cities (235)...', 100);
-        await this.delay(400);
-        this.renderCapitals();
-
-        // Step 4: Airports (final layer of detail)
-        this.updateLoadingProgress('Rendering airports (7,793)...', 100);
-        await this.delay(400);
-        this.renderAirports();
-
-        // Update stats
-        this.updateStats();
-
-        // Hide loading screen
-        this.updateLoadingProgress('Complete!', 100);
-        await this.delay(500);
-        document.getElementById('loading').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('loading').style.display = 'none';
-        }, 500);
     }
 
     delay(ms) {
@@ -281,63 +259,63 @@ class GlobeViewer {
 
                 const points = outerRing.map(([lon, lat]) => this.latLonToVector3(lat, lon, 100.3));
 
-                // Create triangulated filled mesh using ConvexGeometry approximation
-                // For simplicity, use a triangle fan from centroid
-                const centroid = new THREE.Vector3();
-                points.forEach(p => centroid.add(p));
-                centroid.divideScalar(points.length);
+                // Create a simple flat polygon using earcut triangulation
+                // First, flatten the 3D points to 2D for triangulation
+                const flatVertices = [];
+                points.forEach(p => {
+                    flatVertices.push(p.x, p.y, p.z);
+                });
 
+                // Create a simple convex fill by connecting all points to first point
+                // This works well for most countries
+                const geometry = new THREE.BufferGeometry();
                 const vertices = [];
                 const indices = [];
 
-                // Add centroid as first vertex
-                vertices.push(centroid.x, centroid.y, centroid.z);
+                // Add all vertices
+                for (let i = 0; i < points.length; i++) {
+                    vertices.push(points[i].x, points[i].y, points[i].z);
+                }
 
-                // Add all boundary points
-                points.forEach(p => {
-                    vertices.push(p.x, p.y, p.z);
-                });
-
-                // Create triangle fan indices
-                for (let i = 1; i < points.length; i++) {
+                // Create triangle fan from first vertex
+                for (let i = 1; i < points.length - 1; i++) {
                     indices.push(0, i, i + 1);
                 }
-                // Close the fan
-                indices.push(0, points.length, 1);
 
-                const geometry = new THREE.BufferGeometry();
                 geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
                 geometry.setIndex(indices);
-                geometry.computeVertexNormals();
 
                 const fillMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x1a3a4a,  // Dark blue-gray fill
+                    color: 0x2a4a5a,  // Slightly lighter blue-gray
                     transparent: true,
-                    opacity: 0.4,
-                    side: THREE.DoubleSide
+                    opacity: 0.5,
+                    side: THREE.DoubleSide,
+                    depthWrite: false  // Prevent z-fighting
                 });
 
                 const fillMesh = new THREE.Mesh(geometry, fillMaterial);
                 fillMesh.userData = {
                     type: 'country-boundary',
                     properties: feature.properties,
-                    originalColor: 0x1a3a4a,
-                    originalOpacity: 0.4
+                    originalColor: 0x2a4a5a,
+                    originalOpacity: 0.5
                 };
+                fillMesh.renderOrder = 1;  // Render fills first
                 this.meshes.countryBoundaries.push(fillMesh);
                 this.globe.add(fillMesh);
 
-                // 2. Outline for visual definition
+                // Outline for visual definition
                 const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
                 const lineMaterial = new THREE.LineBasicMaterial({
                     color: 0x00ffff,  // Cyan outline
                     transparent: true,
-                    opacity: 0.8,
+                    opacity: 0.95,
                     linewidth: 2
                 });
 
                 const line = new THREE.Line(lineGeometry, lineMaterial);
                 line.userData = { type: 'country-outline', properties: feature.properties };
+                line.renderOrder = 2;  // Render lines on top
                 this.globe.add(line);
             }
         }
@@ -363,43 +341,38 @@ class GlobeViewer {
 
                 const points = outerRing.map(([lon, lat]) => this.latLonToVector3(lat, lon, 100.2));
 
-                // Create triangulated filled mesh
-                const centroid = new THREE.Vector3();
-                points.forEach(p => centroid.add(p));
-                centroid.divideScalar(points.length);
-
+                // Create flat polygon fill
+                const geometry = new THREE.BufferGeometry();
                 const vertices = [];
                 const indices = [];
 
-                vertices.push(centroid.x, centroid.y, centroid.z);
-                points.forEach(p => {
-                    vertices.push(p.x, p.y, p.z);
-                });
+                for (let i = 0; i < points.length; i++) {
+                    vertices.push(points[i].x, points[i].y, points[i].z);
+                }
 
-                for (let i = 1; i < points.length; i++) {
+                for (let i = 1; i < points.length - 1; i++) {
                     indices.push(0, i, i + 1);
                 }
-                indices.push(0, points.length, 1);
 
-                const geometry = new THREE.BufferGeometry();
                 geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
                 geometry.setIndex(indices);
-                geometry.computeVertexNormals();
 
                 const fillMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x0a2a1a,  // Dark green fill
+                    color: 0x1a3a2a,  // Dark green fill
                     transparent: true,
-                    opacity: 0.3,
-                    side: THREE.DoubleSide
+                    opacity: 0.4,
+                    side: THREE.DoubleSide,
+                    depthWrite: false
                 });
 
                 const fillMesh = new THREE.Mesh(geometry, fillMaterial);
                 fillMesh.userData = {
                     type: 'region-boundary',
                     properties: feature.properties,
-                    originalColor: 0x0a2a1a,
-                    originalOpacity: 0.3
+                    originalColor: 0x1a3a2a,
+                    originalOpacity: 0.4
                 };
+                fillMesh.renderOrder = 1;
                 this.meshes.regionBoundaries.push(fillMesh);
                 this.globe.add(fillMesh);
 
@@ -408,12 +381,13 @@ class GlobeViewer {
                 const lineMaterial = new THREE.LineBasicMaterial({
                     color: 0x00ff00,  // Green outline
                     transparent: true,
-                    opacity: 0.6,
+                    opacity: 0.7,
                     linewidth: 1
                 });
 
                 const line = new THREE.Line(lineGeometry, lineMaterial);
                 line.userData = { type: 'region-outline', properties: feature.properties };
+                line.renderOrder = 2;
                 this.globe.add(line);
             }
         }
@@ -707,11 +681,11 @@ class GlobeViewer {
                     <div class="data-label">Land Area</div>
                     <div class="data-value">${landArea}</div>
                 </div>` : ''}
-                <div class="data-row">
+                <div class="data-row vertical">
                     <div class="data-label">Climate</div>
                     <div class="data-value">${country.geography?.climate || 'N/A'}</div>
                 </div>
-                <div class="data-row">
+                <div class="data-row vertical">
                     <div class="data-label">Terrain</div>
                     <div class="data-value">${terrain}</div>
                 </div>
@@ -723,11 +697,11 @@ class GlobeViewer {
                     <div class="data-label">Lowest Point</div>
                     <div class="data-value">${lowPoint}</div>
                 </div>` : ''}
-                ${naturalHazards ? `<div class="data-row">
+                ${naturalHazards ? `<div class="data-row vertical">
                     <div class="data-label">Natural Hazards</div>
                     <div class="data-value">${naturalHazards}</div>
                 </div>` : ''}
-                ${environmentIssues ? `<div class="data-row">
+                ${environmentIssues ? `<div class="data-row vertical">
                     <div class="data-label">Environment Issues</div>
                     <div class="data-value">${environmentIssues}</div>
                 </div>` : ''}
@@ -767,8 +741,8 @@ class GlobeViewer {
                     <div class="data-label">Type</div>
                     <div class="data-value">${country.government?.type || 'N/A'}</div>
                 </div>
-                ${country.government?.administrative_divisions ? `<div class="data-row">
-                    <div class="data-label">Administrative Divisions</div>
+                ${country.government?.administrative_divisions ? `<div class="data-row vertical">
+                    <div class="data-label">Divisions</div>
                     <div class="data-value">${country.government.administrative_divisions}</div>
                 </div>` : ''}
             </div>

@@ -143,18 +143,42 @@
         .data-row {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
+            padding: 10px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .data-row.vertical {
+            flex-direction: column;
+            gap: 6px;
         }
 
         .data-label {
             opacity: 0.6;
-            font-size: 13px;
+            font-size: 12px;
+            flex-shrink: 0;
+            min-width: 100px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            font-weight: 600;
         }
 
         .data-value {
-            font-weight: 500;
+            font-weight: 400;
             font-size: 13px;
+            line-height: 1.5;
+            text-align: right;
+            flex: 1;
+        }
+
+        .data-row.vertical .data-label {
+            opacity: 0.7;
+        }
+
+        .data-row.vertical .data-value {
+            text-align: left;
+            opacity: 0.9;
         }
 
         .regions-grid {
