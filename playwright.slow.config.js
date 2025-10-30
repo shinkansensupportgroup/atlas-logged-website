@@ -46,4 +46,7 @@ module.exports = defineConfig({
 
   // Global setup to add delays between tests
   globalSetup: require.resolve('./test/config/slow-setup.js'),
+
+  // Global teardown to clean up test data
+  globalTeardown: require.resolve('./test/config/slow-teardown.js'),
 });

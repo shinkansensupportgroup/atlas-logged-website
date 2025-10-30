@@ -2,7 +2,7 @@
 
 const fetch = require('node-fetch');
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbxTt6OqQBMj5DeSmQ-yMMUrnAvcuKQJa-pNx7h8KNgAp37PR8GsfaCkQIqOH3vWhWQ-/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwLfr1LIc0hxYznOfXCUqX--od90ZaFFVPpP7h3vjsIqV1izyG_2cG2b5JP45vT-1St/exec';
 
 async function cleanupTestFeatures() {
   console.log('🧹 Fetching all features...\n');
