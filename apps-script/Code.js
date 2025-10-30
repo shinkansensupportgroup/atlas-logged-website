@@ -275,40 +275,51 @@ function handleVote(e) {
     }
 
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-    const data = sheet.getDataRange().getValues();
 
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][0] === featureId) {
-        const currentVotes = data[i][3] || 0;
-        const newVotes = currentVotes + 1;
+    // OPTIMIZATION: Use cached row lookup instead of reading entire sheet
+    const rowIndex = getFeatureRow(sheet, featureId);
 
-        sheet.getRange(i + 1, 4).setValue(newVotes);
-
-        cache.put(voteKey, 'true', VOTE_COOLDOWN_HOURS * 3600);
-
-        // Invalidate feature list cache since vote count changed
-        cache.remove('feature_list');
-        Logger.log('Cache invalidated after vote');
-
-        // Write to backup sheet
-        writeToBackup('VOTE', {
-          id: featureId,
-          title: data[i][1],
-          description: data[i][2],
-          votes: newVotes,
-          status: data[i][4],
-          submitted: data[i][5],
-          email: data[i][6]
-        });
-
-        return createResponse(true, 'Vote recorded!', {
-          featureId: featureId,
-          newVotes: newVotes
-        });
-      }
+    if (rowIndex === -1) {
+      return createResponse(false, 'Feature not found');
     }
 
-    return createResponse(false, 'Feature not found');
+    // Read feature data for backup (only the row we need)
+    const featureRow = sheet.getRange(rowIndex, 1, 1, 7).getValues()[0];
+
+    // OPTIMIZATION: Read only the votes cell (column 4)
+    const voteCell = sheet.getRange(rowIndex, 4);
+    const currentVotes = voteCell.getValue() || 0;
+    const newVotes = currentVotes + 1;
+
+    // Write updated vote count
+    voteCell.setValue(newVotes);
+
+    // Store user's vote
+    cache.put(voteKey, 'true', VOTE_COOLDOWN_HOURS * 3600);
+
+    // Write to backup sheet (non-blocking)
+    writeToBackup('VOTE', {
+      id: featureId,
+      title: featureRow[1],
+      description: featureRow[2],
+      votes: newVotes,
+      status: featureRow[4],
+      submitted: featureRow[5],
+      email: featureRow[6]
+    });
+
+    // OPTIMIZATION: Update cached feature list instead of invalidating
+    const updated = updateCachedFeatureList(cache, featureId, newVotes);
+    if (!updated) {
+      // Fall back to invalidation if update failed
+      cache.remove('feature_list');
+      Logger.log('Cache invalidated after vote (update failed)');
+    }
+
+    return createResponse(true, 'Vote recorded!', {
+      featureId: featureId,
+      newVotes: newVotes
+    });
 
   } catch (error) {
     Logger.log('Error in handleVote: ' + error);
@@ -333,40 +344,51 @@ function handleUnvote(e) {
     }
 
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-    const data = sheet.getDataRange().getValues();
 
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][0] === featureId) {
-        const currentVotes = data[i][3] || 0;
-        const newVotes = Math.max(0, currentVotes - 1);
+    // OPTIMIZATION: Use cached row lookup instead of reading entire sheet
+    const rowIndex = getFeatureRow(sheet, featureId);
 
-        sheet.getRange(i + 1, 4).setValue(newVotes);
-
-        cache.remove(voteKey);
-
-        // Invalidate feature list cache since vote count changed
-        cache.remove('feature_list');
-        Logger.log('Cache invalidated after unvote');
-
-        // Write to backup sheet
-        writeToBackup('UNVOTE', {
-          id: featureId,
-          title: data[i][1],
-          description: data[i][2],
-          votes: newVotes,
-          status: data[i][4],
-          submitted: data[i][5],
-          email: data[i][6]
-        });
-
-        return createResponse(true, 'Vote removed!', {
-          featureId: featureId,
-          newVotes: newVotes
-        });
-      }
+    if (rowIndex === -1) {
+      return createResponse(false, 'Feature not found');
     }
 
-    return createResponse(false, 'Feature not found');
+    // Read feature data for backup (only the row we need)
+    const featureRow = sheet.getRange(rowIndex, 1, 1, 7).getValues()[0];
+
+    // OPTIMIZATION: Read only the votes cell (column 4)
+    const voteCell = sheet.getRange(rowIndex, 4);
+    const currentVotes = voteCell.getValue() || 0;
+    const newVotes = Math.max(0, currentVotes - 1);
+
+    // Write updated vote count
+    voteCell.setValue(newVotes);
+
+    // Remove user's vote
+    cache.remove(voteKey);
+
+    // Write to backup sheet (non-blocking)
+    writeToBackup('UNVOTE', {
+      id: featureId,
+      title: featureRow[1],
+      description: featureRow[2],
+      votes: newVotes,
+      status: featureRow[4],
+      submitted: featureRow[5],
+      email: featureRow[6]
+    });
+
+    // OPTIMIZATION: Update cached feature list instead of invalidating
+    const updated = updateCachedFeatureList(cache, featureId, newVotes);
+    if (!updated) {
+      // Fall back to invalidation if update failed
+      cache.remove('feature_list');
+      Logger.log('Cache invalidated after unvote (update failed)');
+    }
+
+    return createResponse(true, 'Vote removed!', {
+      featureId: featureId,
+      newVotes: newVotes
+    });
 
   } catch (error) {
     Logger.log('Error in handleUnvote: ' + error);
@@ -431,6 +453,85 @@ function handleDelete(e) {
 // ========================================
 // HELPER FUNCTIONS
 // ========================================
+
+/**
+ * Get the sheet row number for a feature ID
+ * Uses cache to avoid repeated lookups
+ * OPTIMIZATION: Caches row numbers for 1 hour to avoid full sheet scans
+ */
+function getFeatureRow(sheet, featureId) {
+  const cache = CacheService.getScriptCache();
+  const cacheKey = 'feature_row_' + featureId;
+
+  // Check cache first
+  const cachedRow = cache.get(cacheKey);
+  if (cachedRow !== null) {
+    Logger.log('Row cache hit for feature ' + featureId);
+    return parseInt(cachedRow);
+  }
+
+  // Cache miss - read ID column and find row
+  Logger.log('Row cache miss for feature ' + featureId);
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) {
+    return -1; // Empty sheet
+  }
+
+  const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+
+  for (let i = 0; i < ids.length; i++) {
+    if (ids[i][0] === featureId) {
+      const rowIndex = i + 2; // +2 for header row and 0-indexed array
+
+      // Cache for 1 hour (row numbers rarely change)
+      cache.put(cacheKey, rowIndex.toString(), 3600);
+
+      return rowIndex;
+    }
+  }
+
+  return -1; // Not found
+}
+
+/**
+ * Update cached feature list with new vote count
+ * Instead of invalidating cache, update it directly
+ * OPTIMIZATION: Avoids regenerating entire feature list on every vote
+ */
+function updateCachedFeatureList(cache, featureId, newVotes) {
+  const cachedFeatureList = cache.get('feature_list');
+  if (!cachedFeatureList) {
+    return false; // No cache to update
+  }
+
+  try {
+    const parsed = JSON.parse(cachedFeatureList);
+    const featuresList = parsed.data;
+
+    // Find and update the vote count in cached data
+    for (let i = 0; i < featuresList.length; i++) {
+      if (featuresList[i].id === featureId) {
+        featuresList[i].votes = newVotes;
+        break;
+      }
+    }
+
+    // Re-sort by votes (descending)
+    featuresList.sort(function(a, b) {
+      return b.votes - a.votes;
+    });
+
+    // Update cache with new sorted list
+    parsed.data = featuresList;
+    cache.put('feature_list', JSON.stringify(parsed), 300);
+
+    Logger.log('Updated cached feature list with new vote count for feature ' + featureId);
+    return true;
+  } catch (error) {
+    Logger.log('Failed to update cache, will invalidate: ' + error);
+    return false;
+  }
+}
 
 function getUserHash(e) {
   const userAgent = e.parameter.userAgent || 'unknown';
