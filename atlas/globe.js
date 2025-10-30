@@ -347,14 +347,14 @@ class GlobeViewer {
                 const outerRing = polygon[0];
                 if (outerRing.length < 3) continue;
 
-                const points = outerRing.map(([lon, lat]) => this.latLonToVector3(lat, lon, 100.3));
+                // Subdivide the polygon for better sphere conformance
+                const subdividedRing = this.subdividePolygon(outerRing, 2);
+                const points = subdividedRing.map(([lon, lat]) => this.latLonToVector3(lat, lon, 100.3));
 
-                // Use Earcut for proper triangulation
-                // First, flatten the 3D points for Earcut (it needs 2D coordinates)
+                // Use lat/lon for 2D triangulation (proper spherical coordinates)
                 const flatCoords = [];
-                points.forEach(p => {
-                    // Project to 2D using simple planar approximation
-                    flatCoords.push(p.x, p.y);
+                subdividedRing.forEach(([lon, lat]) => {
+                    flatCoords.push(lon, lat);
                 });
 
                 // Triangulate using Earcut
@@ -370,6 +370,7 @@ class GlobeViewer {
                 const fillGeometry = new THREE.BufferGeometry();
                 fillGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
                 fillGeometry.setIndex(indices);
+                fillGeometry.computeVertexNormals();
 
                 const fillMaterial = new THREE.MeshBasicMaterial({
                     color: 0x2a4a5a,
@@ -405,6 +406,31 @@ class GlobeViewer {
         }
 
         console.log(`Rendered ${this.meshes.countryBoundaries.length} country boundary meshes`);
+    }
+
+    subdividePolygon(ring, divisions) {
+        // Subdivide each edge of the polygon for smoother sphere conformance
+        const subdivided = [];
+
+        for (let i = 0; i < ring.length - 1; i++) {
+            const [lon1, lat1] = ring[i];
+            const [lon2, lat2] = ring[i + 1];
+
+            subdivided.push([lon1, lat1]);
+
+            // Add intermediate points
+            for (let j = 1; j <= divisions; j++) {
+                const t = j / (divisions + 1);
+                const lon = lon1 + (lon2 - lon1) * t;
+                const lat = lat1 + (lat2 - lat1) * t;
+                subdivided.push([lon, lat]);
+            }
+        }
+
+        // Close the ring
+        subdivided.push(ring[ring.length - 1]);
+
+        return subdivided;
     }
 
     renderRegionBoundaries() {
