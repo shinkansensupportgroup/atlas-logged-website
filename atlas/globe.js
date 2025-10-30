@@ -210,24 +210,55 @@ class GlobeViewer {
                 }
             });
 
-            // Render data on globe
-            this.updateLoadingProgress('Rendering globe...', 100);
-            this.renderCountryBoundaries();
-            this.renderRegionBoundaries();
-            this.renderAirports();
-            this.renderCapitals();
-            this.updateStats();
+            // Make loading screen transparent to see rendering behind it
+            document.getElementById('loading').classList.add('transparent');
 
-            // Hide loading screen
-            this.updateLoadingProgress('Complete!', 100);
-            setTimeout(() => {
-                document.getElementById('loading').style.display = 'none';
-            }, 500);
+            // Render data progressively with delays for visual effect
+            await this.renderProgressively();
 
         } catch (error) {
             console.error('Error loading data:', error);
             this.updateLoadingProgress(`Error: ${error.message}`, 0);
         }
+    }
+
+    async renderProgressively() {
+        // Progressive rendering with aesthetic order: structure → detail
+
+        // Step 1: Country boundaries (establish world map)
+        this.updateLoadingProgress('Rendering country boundaries (242)...', 100);
+        await this.delay(300);
+        this.renderCountryBoundaries();
+
+        // Step 2: Regional boundaries (add detail)
+        this.updateLoadingProgress('Rendering regional boundaries (493)...', 100);
+        await this.delay(500);
+        this.renderRegionBoundaries();
+
+        // Step 3: Capital cities (major landmarks)
+        this.updateLoadingProgress('Rendering capital cities (235)...', 100);
+        await this.delay(400);
+        this.renderCapitals();
+
+        // Step 4: Airports (final layer of detail)
+        this.updateLoadingProgress('Rendering airports (7,793)...', 100);
+        await this.delay(400);
+        this.renderAirports();
+
+        // Update stats
+        this.updateStats();
+
+        // Hide loading screen
+        this.updateLoadingProgress('Complete!', 100);
+        await this.delay(500);
+        document.getElementById('loading').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+        }, 500);
+    }
+
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     renderCountryBoundaries() {
