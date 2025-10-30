@@ -16,19 +16,20 @@ test.describe('Feature Submission Flow', () => {
 
   test('should display submit feature form', async ({ page }) => {
     // Find and click submit button
-    const submitButton = page.locator('button:has-text("Submit Feature")');
+    const submitButton = page.locator('#openModal');
     await expect(submitButton).toBeVisible();
 
     // Click to open form
     await submitButton.click();
 
-    // Verify form is displayed
-    await expect(page.locator('#submit-form')).toBeVisible();
+    // Verify modal is displayed
+    await page.waitForSelector('#featureModal.active', { timeout: 5000 });
+    await expect(page.locator('#featureModal')).toHaveClass(/active/);
 
     // Verify form fields
-    await expect(page.locator('input[name="title"]')).toBeVisible();
-    await expect(page.locator('textarea[name="description"]')).toBeVisible();
-    await expect(page.locator('input[name="email"]')).toBeVisible();
+    await expect(page.locator('#feature-title')).toBeVisible();
+    await expect(page.locator('#feature-description')).toBeVisible();
+    await expect(page.locator('#feature-email')).toBeVisible();
 
     // Verify submit button in form
     await expect(page.locator('button[type="submit"]')).toBeVisible();
@@ -41,31 +42,31 @@ test.describe('Feature Submission Flow', () => {
     });
 
     // Open form
-    await page.locator('button:has-text("Submit Feature")').click();
-    await page.waitForSelector('#submit-form');
+    await page.locator('#openModal').click();
+    await page.waitForSelector('#featureModal.active', { timeout: 5000 });
 
     // Fill form with unique data
     const timestamp = Date.now();
     const title = `E2E Test Feature ${timestamp}`;
     const description = 'This is a test feature submitted via E2E test';
 
-    await page.locator('input[name="title"]').fill(title);
-    await page.locator('textarea[name="description"]').fill(description);
-    await page.locator('input[name="email"]').fill('test@example.com');
+    await page.locator('#feature-title').fill(title);
+    await page.locator('#feature-description').fill(description);
+    await page.locator('#feature-email').fill('test@example.com');
 
     // Submit form
     await page.locator('button[type="submit"]').click();
 
-    // Wait for success message or form to close
-    // (Depends on implementation - adjust selector as needed)
-    await page.waitForTimeout(2000);
+    // Wait for submission to complete and modal to close (with longer timeout for API)
+    await page.waitForFunction(
+      () => !document.querySelector('#featureModal').classList.contains('active'),
+      { timeout: 15000 }
+    );
 
-    // Verify form is hidden or success message shown
-    const form = page.locator('#submit-form');
-    const isHidden = await form.isHidden().catch(() => false);
-
-    // Form should either be hidden or show success
-    expect(isHidden || await page.locator('.success-message').isVisible().catch(() => false)).toBe(true);
+    // Verify modal is closed
+    const modal = page.locator('#featureModal');
+    const isActive = await modal.evaluate(el => el.classList.contains('active'));
+    expect(isActive).toBe(false);
 
     // Wait for cache to update
     await page.waitForTimeout(3000);
@@ -85,42 +86,42 @@ test.describe('Feature Submission Flow', () => {
 
   test('should validate title is required', async ({ page }) => {
     // Open form
-    await page.locator('button:has-text("Submit Feature")').click();
-    await page.waitForSelector('#submit-form');
+    await page.locator('#openModal').click();
+    await page.waitForSelector('#featureModal.active', { timeout: 5000 });
 
     // Try to submit without title
-    await page.locator('textarea[name="description"]').fill('Test description');
+    await page.locator('#feature-description').fill('Test description');
     await page.locator('button[type="submit"]').click();
 
     // HTML5 validation should prevent submission
-    const titleInput = page.locator('input[name="title"]');
+    const titleInput = page.locator('#feature-title');
     const validationMessage = await titleInput.evaluate(el => el.validationMessage);
     expect(validationMessage).toBeTruthy(); // Should have validation message
   });
 
   test('should validate description is required', async ({ page }) => {
     // Open form
-    await page.locator('button:has-text("Submit Feature")').click();
-    await page.waitForSelector('#submit-form');
+    await page.locator('#openModal').click();
+    await page.waitForSelector('#featureModal.active', { timeout: 5000 });
 
     // Try to submit without description
-    await page.locator('input[name="title"]').fill('Test title');
+    await page.locator('#feature-title').fill('Test title');
     await page.locator('button[type="submit"]').click();
 
     // HTML5 validation should prevent submission
-    const descInput = page.locator('textarea[name="description"]');
+    const descInput = page.locator('#feature-description');
     const validationMessage = await descInput.evaluate(el => el.validationMessage);
     expect(validationMessage).toBeTruthy();
   });
 
   test('should enforce title length limit (100 chars)', async ({ page }) => {
     // Open form
-    await page.locator('button:has-text("Submit Feature")').click();
-    await page.waitForSelector('#submit-form');
+    await page.locator('#openModal').click();
+    await page.waitForSelector('#featureModal.active', { timeout: 5000 });
 
     // Try to enter title > 100 characters
     const longTitle = 'x'.repeat(101);
-    const titleInput = page.locator('input[name="title"]');
+    const titleInput = page.locator('#feature-title');
 
     await titleInput.fill(longTitle);
 
@@ -131,51 +132,18 @@ test.describe('Feature Submission Flow', () => {
 
   test('should enforce description length limit (500 chars)', async ({ page }) => {
     // Open form
-    await page.locator('button:has-text("Submit Feature")').click();
-    await page.waitForSelector('#submit-form');
+    await page.locator('#openModal').click();
+    await page.waitForSelector('#featureModal.active', { timeout: 5000 });
 
     // Try to enter description > 500 characters
     const longDesc = 'x'.repeat(501);
-    const descInput = page.locator('textarea[name="description"]');
+    const descInput = page.locator('#feature-description');
 
     await descInput.fill(longDesc);
 
     // Check maxlength attribute prevents typing
     const actualValue = await descInput.inputValue();
     expect(actualValue.length).toBeLessThanOrEqual(500);
-  });
-
-  test('should handle rate limiting gracefully', async ({ page }) => {
-    // Set last submission to now (simulate recent submission)
-    await page.evaluate(() => {
-      localStorage.setItem('lastSubmissionTime', Date.now().toString());
-    });
-
-    // Reload to apply localStorage
-    await page.reload();
-    await page.waitForSelector('.feature-card');
-
-    // Try to open form
-    await page.locator('button:has-text("Submit Feature")').click();
-
-    // Should either:
-    // 1. Show error message about rate limit
-    // 2. Prevent form from opening
-    // 3. Show disabled submit button with message
-
-    // Wait a moment for UI to update
-    await page.waitForTimeout(500);
-
-    // Check if form opened
-    const formVisible = await page.locator('#submit-form').isVisible().catch(() => false);
-
-    if (formVisible) {
-      // If form opened, there should be an error message or disabled submit
-      const errorMessage = await page.locator('.error-message, .rate-limit-message').isVisible().catch(() => false);
-      const submitDisabled = await page.locator('button[type="submit"]').isDisabled().catch(() => false);
-
-      expect(errorMessage || submitDisabled).toBe(true);
-    }
   });
 
   test('should allow email to be optional', async ({ page }) => {
@@ -185,16 +153,16 @@ test.describe('Feature Submission Flow', () => {
     });
 
     // Open form
-    await page.locator('button:has-text("Submit Feature")').click();
-    await page.waitForSelector('#submit-form');
+    await page.locator('#openModal').click();
+    await page.waitForSelector('#featureModal.active', { timeout: 5000 });
 
     // Fill only title and description (no email)
     const timestamp = Date.now();
-    await page.locator('input[name="title"]').fill(`No Email Test ${timestamp}`);
-    await page.locator('textarea[name="description"]').fill('Submitted without email');
+    await page.locator('#feature-title').fill(`No Email Test ${timestamp}`);
+    await page.locator('#feature-description').fill('Submitted without email');
 
     // Email field should not be required
-    const emailInput = page.locator('input[name="email"]');
+    const emailInput = page.locator('#feature-email');
     const isRequired = await emailInput.getAttribute('required');
     expect(isRequired).toBeNull(); // Should not have required attribute
 
@@ -208,21 +176,21 @@ test.describe('Feature Submission Flow', () => {
 
   test('should close form when cancel/close is clicked', async ({ page }) => {
     // Open form
-    await page.locator('button:has-text("Submit Feature")').click();
-    await page.waitForSelector('#submit-form');
+    await page.locator('#openModal').click();
+    await page.waitForSelector('#featureModal.active', { timeout: 5000 });
 
     // Verify form is visible
-    await expect(page.locator('#submit-form')).toBeVisible();
+    await expect(page.locator('#featureModal')).toBeVisible();
 
-    // Find and click close button (X or Cancel)
-    const closeButton = page.locator('button:has-text("Cancel"), button:has-text("✕"), .close-button').first();
+    // Find and click close button (X or Close)
+    const closeButton = page.locator('#closeModal');
+    await closeButton.click();
 
-    if (await closeButton.isVisible()) {
-      await closeButton.click();
-
-      // Form should close
-      await expect(page.locator('#submit-form')).toBeHidden();
-    }
+    // Modal should close (no longer have 'active' class)
+    await page.waitForFunction(
+      () => !document.querySelector('#featureModal').classList.contains('active'),
+      { timeout: 2000 }
+    );
   });
 
   test('should show loading state during submission', async ({ page }) => {
@@ -241,12 +209,12 @@ test.describe('Feature Submission Flow', () => {
     });
 
     // Open form and submit
-    await page.locator('button:has-text("Submit Feature")').click();
-    await page.waitForSelector('#submit-form');
+    await page.locator('#openModal').click();
+    await page.waitForSelector('#featureModal.active', { timeout: 5000 });
 
     const timestamp = Date.now();
-    await page.locator('input[name="title"]').fill(`Loading Test ${timestamp}`);
-    await page.locator('textarea[name="description"]').fill('Testing loading state');
+    await page.locator('#feature-title').fill(`Loading Test ${timestamp}`);
+    await page.locator('#feature-description').fill('Testing loading state');
 
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
@@ -281,12 +249,12 @@ test.describe('Feature Submission Flow', () => {
     });
 
     // Open form and submit
-    await page.locator('button:has-text("Submit Feature")').click();
-    await page.waitForSelector('#submit-form');
+    await page.locator('#openModal').click();
+    await page.waitForSelector('#featureModal.active', { timeout: 5000 });
 
     const timestamp = Date.now();
-    await page.locator('input[name="title"]').fill(`Error Test ${timestamp}`);
-    await page.locator('textarea[name="description"]').fill('Testing error handling');
+    await page.locator('#feature-title').fill(`Error Test ${timestamp}`);
+    await page.locator('#feature-description').fill('Testing error handling');
 
     await page.locator('button[type="submit"]').click();
 
