@@ -250,13 +250,14 @@ class GlobeViewer {
                     key: 'boundaries',
                     render: () => this.renderCountryBoundaries()
                 },
-                {
-                    name: 'Regional Boundaries',
-                    url: 'resources/regions_10m.geojson',
-                    size: '25 MB',
-                    key: 'regions',
-                    render: () => this.renderRegionBoundaries()
-                },
+                // Regional boundaries disabled to reduce loading overhead
+                // {
+                //     name: 'Regional Boundaries',
+                //     url: 'resources/regions_10m.geojson',
+                //     size: '25 MB',
+                //     key: 'regions',
+                //     render: () => this.renderRegionBoundaries()
+                // },
                 {
                     name: 'Airports Database',
                     url: 'resources/airports_iata.json',
@@ -348,43 +349,7 @@ class GlobeViewer {
 
                 const points = outerRing.map(([lon, lat]) => this.latLonToVector3(lat, lon, 100.3));
 
-                // Create invisible clickable mesh using simple triangulation
-                const geometry = new THREE.BufferGeometry();
-                const vertices = [];
-                const indices = [];
-
-                for (let i = 0; i < points.length; i++) {
-                    vertices.push(points[i].x, points[i].y, points[i].z);
-                }
-
-                for (let i = 1; i < points.length - 1; i++) {
-                    indices.push(0, i, i + 1);
-                }
-
-                geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-                geometry.setIndex(indices);
-
-                // Invisible clickable area
-                const fillMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x2a4a5a,
-                    transparent: true,
-                    opacity: 0.0,  // Invisible by default
-                    side: THREE.DoubleSide,
-                    depthWrite: false
-                });
-
-                const fillMesh = new THREE.Mesh(geometry, fillMaterial);
-                fillMesh.userData = {
-                    type: 'country-boundary',
-                    properties: feature.properties,
-                    originalColor: 0x2a4a5a,
-                    originalOpacity: 0.0
-                };
-                fillMesh.renderOrder = 1;
-                this.meshes.countryBoundaries.push(fillMesh);
-                this.globe.add(fillMesh);
-
-                // Visible cyan outline
+                // Just render the outline - no fill mesh
                 const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
                 const lineMaterial = new THREE.LineBasicMaterial({
                     color: 0x00ffff,
@@ -394,13 +359,18 @@ class GlobeViewer {
                 });
 
                 const line = new THREE.Line(lineGeometry, lineMaterial);
-                line.userData = { type: 'country-outline', properties: feature.properties };
-                line.renderOrder = 2;
+                line.userData = {
+                    type: 'country-boundary',
+                    properties: feature.properties
+                };
+
+                // Store in countryBoundaries for click detection
+                this.meshes.countryBoundaries.push(line);
                 this.globe.add(line);
             }
         }
 
-        console.log(`Rendered ${this.meshes.countryBoundaries.length} country boundary meshes`);
+        console.log(`Rendered ${this.meshes.countryBoundaries.length} country boundary lines`);
     }
 
     renderRegionBoundaries() {
@@ -551,6 +521,9 @@ class GlobeViewer {
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
 
+        // Increase threshold for line detection
+        raycaster.params.Line.threshold = 2;
+
         canvas.addEventListener('click', (event) => {
             const rect = canvas.getBoundingClientRect();
             mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -558,10 +531,9 @@ class GlobeViewer {
 
             raycaster.setFromCamera(mouse, this.camera);
 
-            // Check all meshes
+            // Check all meshes (no regions now)
             const allMeshes = [
                 ...this.meshes.countryBoundaries,
-                ...this.meshes.regionBoundaries,
                 ...this.meshes.airports,
                 ...this.meshes.capitals
             ];
@@ -584,23 +556,25 @@ class GlobeViewer {
     highlightObject(object) {
         // Clear previous selection
         if (this.selectedObject) {
-            // Restore original opacity (invisible)
-            this.selectedObject.material.opacity = 0.0;
+            // Restore original color
+            this.selectedObject.material.color.setHex(0x00ffff);  // Cyan
+            this.selectedObject.material.opacity = 0.8;
         }
 
         // Highlight new selection
         if (object) {
             this.selectedObject = object;
-            // Make visible with yellow tint when selected
-            object.material.opacity = 0.3;
-            object.material.color.setHex(0xffff00);  // Yellow highlight
+            // Highlight with yellow and make more opaque
+            object.material.color.setHex(0xffff00);  // Yellow
+            object.material.opacity = 1.0;
         }
     }
 
     clearSelection() {
         // Clear highlighted object
         if (this.selectedObject) {
-            this.selectedObject.material.opacity = 0.0;  // Make invisible again
+            this.selectedObject.material.color.setHex(0x00ffff);  // Cyan
+            this.selectedObject.material.opacity = 0.8;
             this.selectedObject = null;
         }
 
