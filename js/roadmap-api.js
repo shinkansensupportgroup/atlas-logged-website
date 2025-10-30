@@ -162,6 +162,11 @@ function createFeatureCard(feature, columnId) {
     const submittedFeatures = getSubmittedFeatures();
     const isYourSubmission = submittedFeatures.includes(feature.id);
 
+    // Check if user has already voted for this feature
+    const votedFeatures = getVotedFeatures();
+    const featureIdStr = String(feature.id);
+    const isVoted = votedFeatures.includes(featureIdStr);
+
     card.innerHTML = `
         <h4>
             ${emoji} ${feature.title}
@@ -169,10 +174,10 @@ function createFeatureCard(feature, columnId) {
         </h4>
         <p>${feature.description}</p>
         <div class="vote-section">
-            <button class="vote-button ${isFrozen ? 'frozen' : ''}"
+            <button class="vote-button ${isFrozen ? 'frozen' : (isVoted ? 'voted' : '')}"
                     ${isFrozen ? 'disabled' : ''}
                     onclick="voteForFeature(${feature.id}, this)">
-                ${isFrozen ? '🔒 Frozen' : '⬆️ Vote'}
+                ${isFrozen ? '🔒 Frozen' : (isVoted ? '✅ Voted' : '⬆️ Vote')}
             </button>
             <span class="vote-count">${feature.votes} votes</span>
         </div>
@@ -338,6 +343,9 @@ function showVoteError(button, message) {
 // ========================================
 
 async function voteForFeature(featureId, button) {
+    // Convert featureId to string for consistent comparison
+    featureId = String(featureId);
+
     // Ignore frozen or loading buttons
     if (button.disabled || button.classList.contains('frozen') || button.classList.contains('loading')) {
         return;
@@ -438,51 +446,53 @@ async function voteForFeature(featureId, button) {
 
                 console.log('Synced unvote state from server for feature', featureId);
             } else {
-                // Other error - rollback optimistic update
-                button.innerHTML = originalButtonHTML;
-                button.className = originalButtonClasses;
+                // Other error - keep optimistic update, don't rollback
+                button.classList.remove('loading');
                 button.disabled = false;
 
-                if (voteCount) {
-                    voteCount.textContent = originalVoteText;
+                // Keep the voted state in UI (don't rollback)
+                if (!isVoted) {
+                    // Was trying to vote - keep voted state
+                    button.classList.add('voted');
+                    button.innerHTML = '✅ Voted';
+                } else {
+                    // Was trying to unvote - keep unvoted state
+                    button.classList.remove('voted');
+                    button.innerHTML = '⬆️ Vote';
                 }
 
-                // Restore localStorage
-                if (isVoted) {
-                    votedFeatures.push(featureId);
-                } else {
-                    const index = votedFeatures.indexOf(featureId);
-                    if (index > -1) votedFeatures.splice(index, 1);
-                }
-                saveVotedFeatures(votedFeatures);
+                // Do NOT modify localStorage - keep the optimistic update
+                // Vote will sync with server on next successful page load
 
                 // Show subtle error message instead of alert
-                showVoteError(button, result.message);
+                showVoteError(button, result.message || 'Saved offline. Will sync when online.');
             }
         }
     } catch (error) {
-        // ROLLBACK on error
+        // On error, DO NOT rollback localStorage - keep the optimistic update
+        // This ensures votes persist even if the API is temporarily unavailable
         console.error('Error voting:', error);
 
-        button.innerHTML = originalButtonHTML;
-        button.className = originalButtonClasses;
+        // Remove loading state
+        button.classList.remove('loading');
         button.disabled = false;
 
-        if (voteCount) {
-            voteCount.textContent = originalVoteText;
+        // Keep the voted state in UI (don't rollback)
+        if (!isVoted) {
+            // Was trying to vote - keep voted state
+            button.classList.add('voted');
+            button.innerHTML = '✅ Voted';
+        } else {
+            // Was trying to unvote - keep unvoted state
+            button.classList.remove('voted');
+            button.innerHTML = '⬆️ Vote';
         }
 
-        // Restore localStorage
-        if (isVoted) {
-            votedFeatures.push(featureId);
-        } else {
-            const index = votedFeatures.indexOf(featureId);
-            if (index > -1) votedFeatures.splice(index, 1);
-        }
-        saveVotedFeatures(votedFeatures);
+        // Do NOT modify localStorage - keep the optimistic update
+        // Vote will sync with server on next successful page load
 
         // Show subtle error message instead of alert
-        showVoteError(button, 'Voting failed. Please try again.');
+        showVoteError(button, 'Saved offline. Will sync when online.');
     }
 }
 

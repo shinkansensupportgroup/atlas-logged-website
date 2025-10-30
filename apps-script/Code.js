@@ -5,6 +5,10 @@
 
 // CONFIGURATION
 const SHEET_NAME = 'Features';
+const BACKUP_SUBMISSIONS_SHEET = 'Backup_Submissions';  // Inbound: New submissions
+const BACKUP_VOTES_SHEET = 'Backup_Votes';              // State changes: Vote/Unvote
+const BACKUP_DELETES_SHEET = 'Backup_Deletes';          // Cleanup: Test deletions
+const BACKUP_SNAPSHOT_SHEET = 'Backup_Snapshots';       // Full snapshots of Features list
 const MAX_TITLE_LENGTH = 100;
 const MAX_DESCRIPTION_LENGTH = 500;
 const VOTE_COOLDOWN_HOURS = 24;
@@ -162,6 +166,18 @@ function doPost(e) {
     cache.remove('feature_list');
     Logger.log('Cache invalidated after new submission');
 
+    // Write to backup sheet
+    const submittedDate = new Date();
+    writeToBackup('SUBMIT', {
+      id: newId,
+      title: data.title,
+      description: data.description,
+      votes: 0,
+      status: 'Under Review',
+      submitted: submittedDate,
+      email: data.email || 'Anonymous'
+    });
+
     return createResponse(true, 'Feature submitted successfully!', { id: newId });
 
   } catch (error) {
@@ -180,6 +196,10 @@ function doGet(e) {
 
     if (action === 'unvote') {
       return handleUnvote(e);
+    }
+
+    if (action === 'delete') {
+      return handleDelete(e);
     }
 
     // Try to get cached feature list
@@ -255,37 +275,40 @@ function handleVote(e) {
     }
 
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    const data = sheet.getDataRange().getValues();
 
-    // OPTIMIZATION: Use cached row lookup instead of reading entire sheet
-    const rowIndex = getFeatureRow(sheet, featureId);
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] === featureId) {
+        const currentVotes = data[i][3] || 0;
+        const newVotes = currentVotes + 1;
 
-    if (rowIndex === -1) {
-      return createResponse(false, 'Feature not found');
+        sheet.getRange(i + 1, 4).setValue(newVotes);
+
+        cache.put(voteKey, 'true', VOTE_COOLDOWN_HOURS * 3600);
+
+        // Invalidate feature list cache since vote count changed
+        cache.remove('feature_list');
+        Logger.log('Cache invalidated after vote');
+
+        // Write to backup sheet
+        writeToBackup('VOTE', {
+          id: featureId,
+          title: data[i][1],
+          description: data[i][2],
+          votes: newVotes,
+          status: data[i][4],
+          submitted: data[i][5],
+          email: data[i][6]
+        });
+
+        return createResponse(true, 'Vote recorded!', {
+          featureId: featureId,
+          newVotes: newVotes
+        });
+      }
     }
 
-    // OPTIMIZATION: Read only the votes cell (column 4)
-    const voteCell = sheet.getRange(rowIndex, 4);
-    const currentVotes = voteCell.getValue() || 0;
-    const newVotes = currentVotes + 1;
-
-    // Write updated vote count
-    voteCell.setValue(newVotes);
-
-    // Store user's vote
-    cache.put(voteKey, 'true', VOTE_COOLDOWN_HOURS * 3600);
-
-    // OPTIMIZATION: Update cached feature list instead of invalidating
-    const updated = updateCachedFeatureList(cache, featureId, newVotes);
-    if (!updated) {
-      // Fall back to invalidation if update failed
-      cache.remove('feature_list');
-      Logger.log('Cache invalidated after vote (update failed)');
-    }
-
-    return createResponse(true, 'Vote recorded!', {
-      featureId: featureId,
-      newVotes: newVotes
-    });
+    return createResponse(false, 'Feature not found');
 
   } catch (error) {
     Logger.log('Error in handleVote: ' + error);
@@ -310,37 +333,40 @@ function handleUnvote(e) {
     }
 
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    const data = sheet.getDataRange().getValues();
 
-    // OPTIMIZATION: Use cached row lookup instead of reading entire sheet
-    const rowIndex = getFeatureRow(sheet, featureId);
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] === featureId) {
+        const currentVotes = data[i][3] || 0;
+        const newVotes = Math.max(0, currentVotes - 1);
 
-    if (rowIndex === -1) {
-      return createResponse(false, 'Feature not found');
+        sheet.getRange(i + 1, 4).setValue(newVotes);
+
+        cache.remove(voteKey);
+
+        // Invalidate feature list cache since vote count changed
+        cache.remove('feature_list');
+        Logger.log('Cache invalidated after unvote');
+
+        // Write to backup sheet
+        writeToBackup('UNVOTE', {
+          id: featureId,
+          title: data[i][1],
+          description: data[i][2],
+          votes: newVotes,
+          status: data[i][4],
+          submitted: data[i][5],
+          email: data[i][6]
+        });
+
+        return createResponse(true, 'Vote removed!', {
+          featureId: featureId,
+          newVotes: newVotes
+        });
+      }
     }
 
-    // OPTIMIZATION: Read only the votes cell (column 4)
-    const voteCell = sheet.getRange(rowIndex, 4);
-    const currentVotes = voteCell.getValue() || 0;
-    const newVotes = Math.max(0, currentVotes - 1);
-
-    // Write updated vote count
-    voteCell.setValue(newVotes);
-
-    // Remove user's vote
-    cache.remove(voteKey);
-
-    // OPTIMIZATION: Update cached feature list instead of invalidating
-    const updated = updateCachedFeatureList(cache, featureId, newVotes);
-    if (!updated) {
-      // Fall back to invalidation if update failed
-      cache.remove('feature_list');
-      Logger.log('Cache invalidated after unvote (update failed)');
-    }
-
-    return createResponse(true, 'Vote removed!', {
-      featureId: featureId,
-      newVotes: newVotes
-    });
+    return createResponse(false, 'Feature not found');
 
   } catch (error) {
     Logger.log('Error in handleUnvote: ' + error);
@@ -348,86 +374,63 @@ function handleUnvote(e) {
   }
 }
 
-// ========================================
-// HELPER FUNCTIONS
-// ========================================
-
-/**
- * Get the sheet row number for a feature ID
- * Uses cache to avoid repeated lookups
- */
-function getFeatureRow(sheet, featureId) {
-  const cache = CacheService.getScriptCache();
-  const cacheKey = 'feature_row_' + featureId;
-
-  // Check cache first
-  const cachedRow = cache.get(cacheKey);
-  if (cachedRow !== null) {
-    Logger.log('Row cache hit for feature ' + featureId);
-    return parseInt(cachedRow);
-  }
-
-  // Cache miss - read ID column and find row
-  Logger.log('Row cache miss for feature ' + featureId);
-  const lastRow = sheet.getLastRow();
-  if (lastRow <= 1) {
-    return -1; // Empty sheet
-  }
-
-  const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
-
-  for (let i = 0; i < ids.length; i++) {
-    if (ids[i][0] === featureId) {
-      const rowIndex = i + 2; // +2 for header row and 0-indexed array
-
-      // Cache for 1 hour (row numbers rarely change)
-      cache.put(cacheKey, rowIndex.toString(), 3600);
-
-      return rowIndex;
-    }
-  }
-
-  return -1; // Not found
-}
-
-/**
- * Update cached feature list with new vote count
- * Instead of invalidating cache, update it directly
- */
-function updateCachedFeatureList(cache, featureId, newVotes) {
-  const cachedFeatureList = cache.get('feature_list');
-  if (!cachedFeatureList) {
-    return false; // No cache to update
-  }
-
+function handleDelete(e) {
   try {
-    const parsed = JSON.parse(cachedFeatureList);
-    const featuresList = parsed.data;
+    const featureId = parseInt(e.parameter.id);
 
-    // Find and update the vote count in cached data
-    for (let i = 0; i < featuresList.length; i++) {
-      if (featuresList[i].id === featureId) {
-        featuresList[i].votes = newVotes;
-        break;
+    if (!featureId) {
+      return createResponse(false, 'Invalid feature ID');
+    }
+
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    const data = sheet.getDataRange().getValues();
+
+    // Find and delete the row with matching ID
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] === featureId) {
+        const featureTitle = data[i][1];
+
+        // SECURITY: Only allow deletion of test features (containing "E2E Test Feature")
+        if (!featureTitle || !featureTitle.includes('E2E Test Feature')) {
+          Logger.log('Delete attempt blocked for non-test feature: ' + featureId);
+          return createResponse(false, 'Delete operation only allowed for test features');
+        }
+
+        // Write to backup BEFORE deleting (to preserve data)
+        writeToBackup('DELETE', {
+          id: featureId,
+          title: featureTitle,
+          description: data[i][2],
+          votes: data[i][3],
+          status: data[i][4],
+          submitted: data[i][5],
+          email: data[i][6]
+        });
+
+        sheet.deleteRow(i + 1);
+
+        // Invalidate feature list cache since a feature was deleted
+        const cache = CacheService.getScriptCache();
+        cache.remove('feature_list');
+        Logger.log('Test feature deleted and cache invalidated: ' + featureId);
+
+        return createResponse(true, 'Feature deleted successfully', {
+          featureId: featureId
+        });
       }
     }
 
-    // Re-sort by votes (descending)
-    featuresList.sort(function(a, b) {
-      return b.votes - a.votes;
-    });
+    return createResponse(false, 'Feature not found');
 
-    // Update cache with new sorted list
-    parsed.data = featuresList;
-    cache.put('feature_list', JSON.stringify(parsed), 300);
-
-    Logger.log('Updated cached feature list with new vote count for feature ' + featureId);
-    return true;
   } catch (error) {
-    Logger.log('Failed to update cache, will invalidate: ' + error);
-    return false;
+    Logger.log('Error in handleDelete: ' + error);
+    return createResponse(false, 'Delete error');
   }
 }
+
+// ========================================
+// HELPER FUNCTIONS
+// ========================================
 
 function getUserHash(e) {
   const userAgent = e.parameter.userAgent || 'unknown';
@@ -458,4 +461,167 @@ function createResponse(success, message, data) {
   return ContentService
     .createTextOutput(JSON.stringify(response))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function writeToBackup(action, featureData) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    // Route to appropriate backup sheet based on action type
+    let backupSheetName;
+    let headers;
+    let rowData;
+
+    if (action === 'SUBMIT') {
+      backupSheetName = BACKUP_SUBMISSIONS_SHEET;
+      headers = ['Timestamp', 'Feature ID', 'Title', 'Description', 'Status', 'Email'];
+      rowData = [
+        new Date(),
+        featureData.id || '',
+        featureData.title || '',
+        featureData.description || '',
+        featureData.status || '',
+        featureData.email || ''
+      ];
+    } else if (action === 'VOTE' || action === 'UNVOTE') {
+      backupSheetName = BACKUP_VOTES_SHEET;
+      headers = ['Timestamp', 'Action', 'Feature ID', 'Feature Title', 'New Vote Count', 'Status'];
+      rowData = [
+        new Date(),
+        action,
+        featureData.id || '',
+        featureData.title || '',
+        featureData.votes || 0,
+        featureData.status || ''
+      ];
+    } else if (action === 'DELETE') {
+      backupSheetName = BACKUP_DELETES_SHEET;
+      headers = ['Timestamp', 'Feature ID', 'Title', 'Description', 'Final Votes', 'Status', 'Original Submission', 'Email'];
+      rowData = [
+        new Date(),
+        featureData.id || '',
+        featureData.title || '',
+        featureData.description || '',
+        featureData.votes || 0,
+        featureData.status || '',
+        featureData.submitted || '',
+        featureData.email || ''
+      ];
+    } else {
+      Logger.log('Unknown backup action: ' + action);
+      return;
+    }
+
+    let backupSheet = ss.getSheetByName(backupSheetName);
+
+    // Create backup sheet if it doesn't exist
+    if (!backupSheet) {
+      backupSheet = ss.insertSheet(backupSheetName);
+
+      // Set up headers
+      backupSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+      // Format headers
+      backupSheet.getRange(1, 1, 1, headers.length)
+        .setFontWeight('bold')
+        .setBackground('#4A90E2')
+        .setFontColor('#FFFFFF');
+
+      // Freeze header row
+      backupSheet.setFrozenRows(1);
+
+      // Set column widths based on sheet type
+      if (action === 'SUBMIT') {
+        backupSheet.setColumnWidth(1, 150);  // Timestamp
+        backupSheet.setColumnWidth(2, 50);   // ID
+        backupSheet.setColumnWidth(3, 200);  // Title
+        backupSheet.setColumnWidth(4, 350);  // Description
+        backupSheet.setColumnWidth(5, 100);  // Status
+        backupSheet.setColumnWidth(6, 200);  // Email
+      } else if (action === 'VOTE' || action === 'UNVOTE') {
+        backupSheet.setColumnWidth(1, 150);  // Timestamp
+        backupSheet.setColumnWidth(2, 80);   // Action
+        backupSheet.setColumnWidth(3, 50);   // Feature ID
+        backupSheet.setColumnWidth(4, 200);  // Feature Title
+        backupSheet.setColumnWidth(5, 80);   // Vote Count
+        backupSheet.setColumnWidth(6, 100);  // Status
+      } else if (action === 'DELETE') {
+        backupSheet.setColumnWidth(1, 150);  // Timestamp
+        backupSheet.setColumnWidth(2, 50);   // ID
+        backupSheet.setColumnWidth(3, 200);  // Title
+        backupSheet.setColumnWidth(4, 350);  // Description
+        backupSheet.setColumnWidth(5, 80);   // Votes
+        backupSheet.setColumnWidth(6, 100);  // Status
+        backupSheet.setColumnWidth(7, 150);  // Submission
+        backupSheet.setColumnWidth(8, 200);  // Email
+      }
+
+      Logger.log('Backup sheet created: ' + backupSheetName);
+    }
+
+    // Append backup entry (append-only for complete historical record)
+    backupSheet.appendRow(rowData);
+
+    Logger.log('Backup entry written: ' + action + ' for feature ' + featureData.id);
+  } catch (error) {
+    // Log error but don't fail the main operation if backup fails
+    Logger.log('Backup write error (non-critical): ' + error);
+  }
+}
+
+function createSnapshot() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const featuresSheet = ss.getSheetByName(SHEET_NAME);
+    let snapshotSheet = ss.getSheetByName(BACKUP_SNAPSHOT_SHEET);
+
+    // Create snapshot sheet if it doesn't exist
+    if (!snapshotSheet) {
+      snapshotSheet = ss.insertSheet(BACKUP_SNAPSHOT_SHEET);
+      Logger.log('Snapshot sheet created');
+    }
+
+    // Get all data from Features sheet
+    const data = featuresSheet.getDataRange().getValues();
+
+    if (data.length === 0) {
+      Logger.log('No data to snapshot');
+      return;
+    }
+
+    // Clear existing snapshots (we only keep the most recent full snapshot)
+    snapshotSheet.clear();
+
+    // Add snapshot metadata row
+    snapshotSheet.appendRow(['SNAPSHOT TIMESTAMP:', new Date()]);
+    snapshotSheet.appendRow([]);  // Empty row for spacing
+
+    // Copy all data including headers
+    snapshotSheet.getRange(3, 1, data.length, data[0].length).setValues(data);
+
+    // Format headers (row 3, since we have metadata in rows 1-2)
+    snapshotSheet.getRange(3, 1, 1, data[0].length)
+      .setFontWeight('bold')
+      .setBackground('#4A90E2')
+      .setFontColor('#FFFFFF');
+
+    // Freeze header rows
+    snapshotSheet.setFrozenRows(3);
+
+    // Copy column widths
+    for (let i = 1; i <= data[0].length; i++) {
+      const width = featuresSheet.getColumnWidth(i);
+      snapshotSheet.setColumnWidth(i, width);
+    }
+
+    Logger.log('Snapshot created with ' + (data.length - 1) + ' features');
+  } catch (error) {
+    Logger.log('Snapshot creation error (non-critical): ' + error);
+  }
+}
+
+// Trigger to create daily snapshots
+// Run this manually or set up a time-driven trigger in Apps Script dashboard
+function createDailySnapshot() {
+  createSnapshot();
 }
