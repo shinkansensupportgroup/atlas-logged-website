@@ -1,15 +1,70 @@
-# CIA World Factbook Data Coverage
+# Globe Viewer Data Sources
 
-This document details exactly what data fields from the CIA World Factbook are included and excluded in our location intelligence database.
-
-## Data Source
-
-- **Source**: CIA World Factbook (via [factbook.json](https://github.com/factbook/factbook.json))
-- **Update Frequency**: Weekly (from upstream repository)
-- **Countries Covered**: 235+ sovereign nations and territories
-- **Extraction Script**: `scripts/04_extract_factbook_iso.py`
+This document details all data sources used in the interactive 3D globe viewer, including what fields are included and excluded.
 
 ---
+
+## Data Sources Overview
+
+### 1. CIA World Factbook
+- **Source**: [factbook.json](https://github.com/factbook/factbook.json)
+- **Update Frequency**: Weekly (from upstream repository)
+- **Countries Covered**: 235+ sovereign nations and territories
+- **File Size**: 0.96 MB (countries_v2.json)
+- **Extraction Script**: `scripts/04_extract_factbook_iso.py`
+- **Builder Script**: `scripts/05_build_unified_db.js`
+- **What we use**: Country metadata, demographics, geography, government, economy
+
+### 2. Natural Earth Boundaries
+- **Source**: [Natural Earth 1:50m Cultural Vectors](https://www.naturalearthdata.com/downloads/50m-cultural-vectors/)
+- **Resolution**: 50m (1:50,000,000 scale)
+- **File Size**: 9.7 MB (countries_50m.geojson)
+- **Countries**: 242 sovereign states
+- **Processing Script**: `scripts/02_process_boundaries.js`
+- **What we use**: Country boundary polygons for rendering on globe
+
+### 3. Airports Database
+- **Source**: [mwgg/airports](https://github.com/mwgg/airports) (IATA-only subset)
+- **File Size**: 2.1 MB (airports_iata.json)
+- **Airports**: 7,793 airports with IATA codes
+- **Processing Script**: `scripts/03_build_airports.js`
+- **What we use**: Airport locations (lat/lon), IATA codes, names, cities
+
+### 4. Regional Flags (Optional - Currently Disabled)
+- **Source**: Custom Unicode mappings
+- **File Size**: 25 MB (regions_10m.geojson)
+- **Regions**: 493 subdivisions (US states, Canadian provinces, etc.)
+- **Processing Script**: `scripts/04_generate_regional_flags.js`
+- **Status**: Disabled to reduce loading overhead (can be re-enabled)
+- **What we use**: Regional boundaries and Unicode flag emojis
+
+---
+
+## Total Data Loading
+
+**Active (Currently Loaded)**:
+- Countries Database: 0.96 MB
+- Country Boundaries: 9.7 MB
+- Airports Database: 2.1 MB
+- **Total: ~12 MB**
+
+**Disabled (Can Be Re-enabled)**:
+- Regional Boundaries: 25 MB
+- **Total with regions: ~37 MB**
+
+---
+
+## Browser Caching
+
+All data files are cached in browser IndexedDB:
+- **First load**: ~2 seconds (network download)
+- **Subsequent loads**: ~0.5 seconds (IndexedDB cache)
+- **Cache database**: `GlobeDataCache`
+- **Cache invalidation**: Manual (clear browser data)
+
+---
+
+## CIA World Factbook Data Coverage
 
 ## ✅ Included Fields
 
@@ -402,6 +457,41 @@ All extracted data is validated against:
 
 ---
 
+## Rendering Technology
+
+### Globe Rendering
+- **Library**: Three.js r140
+- **Rendering**: WebGL-based 3D graphics
+- **Controls**: OrbitControls for camera manipulation
+- **Globe**: Phong-shaded sphere (radius 100 units)
+
+### Country Boundaries
+- **Technique**: TubeGeometry along boundary paths
+- **Approach**: Thick semi-transparent tubes (0.8 radius) instead of filled polygons
+- **Reason**: Avoids triangulation artifacts from flat planes on sphere surface
+- **Curve**: CatmullRomCurve3 for smooth interpolation
+- **Clickability**: Full tube surface is clickable via raycasting
+- **Appearance**: Glowing border effect around countries
+
+### Points (Airports & Capitals)
+- **Airports**: Orange spheres (0.4 radius) at IATA airport locations
+- **Capitals**: Magenta spheres (0.5 radius) at capital city coordinates
+- **Total**: 7,793 airports + 235 capitals = 8,028 point markers
+
+### Interaction
+- **Click Detection**: Raycaster with threshold of 2 for easier line clicking
+- **Highlighting**: Yellow color (0xffff00) at 60% opacity when selected
+- **Info Panel**: Slide-in panel with complete country data on click
+- **Ocean Clicks**: Clear selection and hide info panel
+
+### Performance Optimizations
+- **Sequential Loading**: Files load one-by-one, render immediately
+- **Progressive Rendering**: Countries → Airports → Capitals (visible during load)
+- **IndexedDB Caching**: All data files cached in browser
+- **Render Order**: Tubes (1), Lines (2) for proper layering
+
+---
+
 ## Related Documentation
 
 - [DATA_SOURCES.md](DATA_SOURCES.md) - Complete attribution and licensing
@@ -411,5 +501,6 @@ All extracted data is validated against:
 
 ---
 
-*Last Updated: October 2025*
+*Last Updated: January 2025*
 *Data Version: CIA World Factbook (via factbook.json, updated weekly)*
+*Rendering: Three.js r140 with WebGL*
