@@ -1,2 +1,6 @@
+# Exclude welcome videos from LFS (small files, need to load in browser)
+videos/releases/welcome.mp4 -filter -diff -merge
+videos/releases/welcome-thumb.jpg -filter -diff -merge
+# Track other videos with LFS
 videos/**/*.mp4 filter=lfs diff=lfs merge=lfs -text
 videos/**/*.mov filter=lfs diff=lfs merge=lfs -text
