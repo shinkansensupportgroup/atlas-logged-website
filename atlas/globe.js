@@ -681,8 +681,10 @@ class GlobeViewer {
         const naturalHazards = country.geography?.natural_hazards || null;
         const environmentIssues = country.geography?.environment_issues || null;
         const elevation = country.geography?.elevation;
-        const highPoint = elevation?.highest_point ? `${elevation.highest_point.name} (${fmt(elevation.highest_point.elevation_m)}m)` : null;
-        const lowPoint = elevation?.lowest_point ? `${elevation.lowest_point.name} (${fmt(elevation.lowest_point.elevation_m)}m)` : null;
+
+        // Elevation data is just text strings, not structured objects
+        const highPoint = elevation?.highest_point || null;
+        const lowPoint = elevation?.lowest_point || null;
 
         // Economy
         const gdp = country.economy?.gdp?.value ? `$${fmt(country.economy.gdp.value)}` : null;
