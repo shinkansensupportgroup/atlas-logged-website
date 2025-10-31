@@ -228,26 +228,267 @@ let countryDetails: [String: (
 
 ---
 
-## 5. Future Data Sources (Planned)
+## 5. Forthcoming Data Sources (Open Data Pipeline)
 
-### OurAirports
+**Note**: These sources will be integrated through a separate open source data pipeline repository. See [OPEN_DATA_PIPELINE_PLAN.md](OPEN_DATA_PIPELINE_PLAN.md) for complete details.
+
+---
+
+### 5.1 Gender Equality & Women's Rights
+
+#### Georgetown Institute - Women, Peace & Security Index (WPS)
+- **URL**: https://giwps.georgetown.edu/the-index/
+- **Description**: Comprehensive women's wellbeing index across inclusion, justice, and security
+- **Coverage**: 181 countries
+- **Format**: Excel spreadsheet (downloadable)
+- **Update**: Biennial (latest: 2025/26 edition)
+- **License**: Academic use (requires confirmation)
+- **API**: No (manual download)
+- **Key Indicators**:
+  - **Inclusion**: Education, employment, parliament, financial inclusion, cell phone access
+  - **Justice**: Legal discrimination, son bias, maternal mortality, access to justice
+  - **Security**: Intimate partner violence, community safety, political violence, armed conflict
+- **Priority**: 🔴 **HIGH** - User requested, unique comprehensive index
+
+#### WomanStats Project
+- **URL**: https://www.womanstats.org/
+- **Description**: 315,000+ data points on women's security across 350+ variables
+- **Coverage**: 176 countries (population > 300,000)
+- **Format**: Web database (requires data access request)
+- **Update**: Ongoing (collaborative research project)
+- **License**: Publicly available (terms TBD - requires investigation)
+- **API**: No public API
+- **Dimensions**: Physical, economic, legal, community, family security, maternity, voice, societal investment, state security
+- **Contact**: info@womanstats.org
+- **Priority**: 🔴 **HIGH** - User requested, most comprehensive database
+- **Action Required**: Contact for bulk data access and licensing terms
+
+#### World Economic Forum - Global Gender Gap Index
+- **URL**: https://www.weforum.org/publications/global-gender-gap-report-2025/
+- **Alternative Sources**:
+  - HDX: https://data.humdata.org/dataset/global-gender-gap-index-world-economic-forum
+  - QOG: https://datafinder.qog.gu.se/dataset/gggi
+- **Description**: Gender gap measures across 4 key dimensions
+- **Coverage**: 146 countries (varies by year)
+- **Format**: Excel (downloadable from reports)
+- **Update**: Annual (June)
+- **License**: Requires attribution (WEF terms)
+- **API**: No (manual downloads)
+- **Dimensions**:
+  - Economic Participation and Opportunity
+  - Educational Attainment
+  - Health and Survival
+  - Political Empowerment
+- **Priority**: 🔴 **HIGH** - Widely cited, annual updates
+
+#### UN Women Data Hub
+- **URL**: https://data.unwomen.org/
+- **Description**: Gender-specific SDG indicators, violence data, women-peace-security metrics
+- **Coverage**: Global (varies by indicator)
+- **Format**: CSV, JSON (via API)
+- **Update**: Continuous
+- **License**: Open data (UN)
+- **API**: ✅ Yes - Data portal with API access
+- **Priority**: 🔴 **HIGH** - Authoritative UN source
+
+#### World Bank Gender Data Portal
+- **URL**: https://genderdata.worldbank.org/
+- **Description**: Sex-disaggregated data across demographics, education, health, economics
+- **Coverage**: Global
+- **Format**: CSV, JSON, XML (via World Bank API)
+- **Update**: Varies by indicator
+- **License**: Creative Commons Attribution 4.0 (CC BY 4.0)
+- **API**: ✅ Yes - World Bank Data API
+- **Priority**: 🟡 Medium (comprehensive but overlaps with other sources)
+
+---
+
+### 5.2 Governance, Democracy & Human Rights
+
+#### V-Dem (Varieties of Democracy)
+- **URL**: https://www.v-dem.net/
+- **Description**: 531 democracy indicators covering historical and contemporary data
+- **Coverage**: 202 countries (1789-2025)
+- **Format**: CSV, Stata, R, SPSS
+- **Update**: Annual (March)
+- **License**: Free to use with attribution (CC BY 4.0)
+- **API**: No (direct downloads)
+- **Key Indices**:
+  - Electoral Democracy Index
+  - Liberal Democracy Index
+  - Participatory Democracy Index
+  - Deliberative Democracy Index
+  - Egalitarian Democracy Index
+- **Priority**: 🔴 **HIGH** - Most authoritative democracy data
+
+#### Freedom House - Freedom in the World
+- **URL**: https://freedomhouse.org/
+- **Description**: Political rights and civil liberties assessments
+- **Coverage**: 195 countries + 15 territories
+- **Format**: Excel, CSV
+- **Update**: Annual (February)
+- **License**: Open data with attribution
+- **API**: No (Excel downloads)
+- **Scores**: 1-7 scale for political rights and civil liberties
+- **Priority**: 🔴 **HIGH** - Widely cited standard
+
+#### Transparency International - Corruption Perceptions Index (CPI)
+- **URL**: https://www.transparency.org/en/cpi/
+- **Description**: Public sector corruption perception scores
+- **Coverage**: 180 countries
+- **Format**: Excel (.xlsx)
+- **Update**: Annual (January)
+- **License**: Creative Commons Attribution-NoDerivs 4.0 (CC BY-ND)
+- **API**: No (direct Excel downloads)
+- **Score**: 0-100 (0 = highly corrupt, 100 = very clean)
+- **Priority**: 🟡 Medium - Important governance indicator
+
+#### International IDEA - Global State of Democracy
+- **URL**: https://www.idea.int/gsod/
+- **Description**: Democracy tracker with monthly event-based updates
+- **Coverage**: 173 countries
+- **Format**: JSON, CSV (via Democracy Tracker)
+- **Update**: Monthly
+- **License**: Open data
+- **API**: ✅ Yes - Democracy Tracker API
+- **Priority**: 🟢 Low (monthly updates may be overkill; V-Dem + Freedom House cover similar ground)
+
+---
+
+### 5.3 Press Freedom
+
+#### Reporters Without Borders - Press Freedom Index
+- **URL**: https://rsf.org/en/index
+- **Description**: Press freedom rankings and scores
+- **Coverage**: 180 countries
+- **Format**: CSV (downloadable)
+- **Update**: Annual (May)
+- **License**: Open data with attribution
+- **API**: No (CSV downloads)
+- **Score**: 0-100 (100 = most free)
+- **Priority**: 🟡 Medium - Critical civil liberties indicator
+
+---
+
+### 5.4 Development Indicators
+
+#### UNDP Human Development Index (HDI)
+- **URL**: https://hdr.undp.org/ | API: https://hdrdata.org
+- **Description**: Comprehensive human development metrics
+- **Coverage**: 193 UN member states
+- **Format**: JSON, CSV, Excel
+- **Update**: Annual (May)
+- **License**: Open (Creative Commons Attribution)
+- **API**: ✅ Yes - HDRO Data API 2.0 (requires API key)
+- **Key Indicators**:
+  - Human Development Index (HDI)
+  - Inequality-adjusted HDI (IHDI)
+  - Gender Development Index (GDI)
+  - Gender Inequality Index (GII)
+  - Multidimensional Poverty Index (MPI)
+  - Planetary Pressures-Adjusted HDI
+- **Priority**: 🔴 **HIGH** - Authoritative development data with API
+
+#### World Bank Development Indicators
+- **URL**: https://data.worldbank.org/ | API: https://api.worldbank.org/v2/
+- **Description**: 1,600+ indicators (GDP, poverty, education, health, environment)
+- **Coverage**: 217 economies
+- **Format**: JSON, XML, CSV
+- **Update**: Quarterly
+- **License**: Creative Commons Attribution 4.0 (CC BY 4.0)
+- **API**: ✅ Yes - Comprehensive REST API
+- **Priority**: 🟢 Low (very large dataset; may use selectively)
+
+---
+
+### 5.5 Reference & Standards
+
+#### Unicode CLDR (Common Locale Data Repository)
+- **URL**: https://cldr.unicode.org/
+- **Description**: Country names in all languages, flag emojis, locale data
+- **Coverage**: All countries
+- **Format**: XML, JSON
+- **Update**: Quarterly
+- **License**: Unicode License (permissive)
+- **API**: No (download repository)
+- **Priority**: 🔴 **HIGH** - Essential for emoji flags and multilingual names
+
+#### REST Countries
+- **URL**: https://restcountries.com/
+- **Description**: Country information (name, capital, currency, languages, flags)
+- **Coverage**: 250+ countries
+- **Format**: JSON
+- **Update**: Community maintained
+- **License**: MPL 2.0
+- **API**: ✅ Yes - Free REST API
+- **Priority**: 🟢 Low (good for validation)
+
+---
+
+### 5.6 Aviation (Supplementary)
+
+#### OurAirports
 - **URL**: https://ourairports.com/data/
-- **License**: Public Domain (CC0)
+- **Description**: Comprehensive airport database with heliports, seaplane bases
 - **Coverage**: 76,000+ airports
-- **Use**: Supplement mwgg/Airports with heliports, seaplane bases
-- **Status**: Optional enhancement
+- **Format**: CSV
+- **Update**: Daily
+- **License**: Public Domain (CC0)
+- **API**: No (direct CSV downloads)
+- **Priority**: 🟢 Low (supplement mwgg/Airports if needed)
 
-### UN M49 Country Codes
-- **URL**: https://unstats.un.org/unsd/methodology/m49/
-- **License**: Public Domain
-- **Use**: Additional country code validation
-- **Status**: Reference only
+---
 
-### Travel.State.Gov (US State Department)
+### 5.7 Safety & Travel (Future Consideration)
+
+#### US State Department Travel Advisories
 - **URL**: https://travel.state.gov/
+- **Description**: Safety warnings and travel advisories
+- **Coverage**: All countries
+- **Format**: HTML (scraping needed) or API
+- **Update**: Continuous
 - **License**: Public Domain (US Government)
-- **Use**: Safety warnings, travel advisories
-- **Status**: Future integration (API available)
+- **API**: Available
+- **Priority**: 🟢 Low (future feature)
+
+---
+
+## Implementation Plan
+
+All forthcoming sources will be integrated through a separate **open source data pipeline repository** with the following goals:
+
+### Goals
+1. **Automated Updates**: Monthly refresh via GitHub Actions CI/CD
+2. **Unified Schema**: All data standardized with ISO 2/3 codes, emoji flags, consistent country IDs
+3. **Coverage Tracking**: Matrix showing which countries each dataset supports
+4. **Quality Assurance**: Automated validation, schema checks, outlier detection
+5. **Open Source**: MIT licensed pipeline code, respecting individual source licenses
+6. **Community Friendly**: Well-documented, easy to contribute new sources
+
+### Priorities
+- **Phase 1** (Months 1-2): Foundation + Gender sources (Georgetown WPS, WomanStats, WEF Gender Gap, UN Women)
+- **Phase 2** (Month 3): Governance sources (V-Dem, Freedom House, Transparency CPI, RSF)
+- **Phase 3** (Month 4): Development sources (UNDP HDI)
+- **Phase 4** (Month 5): Automation, publishing, documentation
+- **Phase 5** (Month 6): Integration with Atlas Logged app
+
+### Repository
+- **Name**: `atlas-logged-data-pipeline` or `global-location-intelligence`
+- **Structure**: Sources organized by category, modular fetchers, unified output
+- **Output**: JSON + CSV unified datasets, individual source JSONs, coverage matrix
+- **Documentation**: Complete source attributions, licenses, API usage guides
+
+### Next Actions
+1. Create separate repository for data pipeline
+2. **Contact WomanStats** (info@womanstats.org) for bulk data access
+3. Confirm licenses for Georgetown WPS and WEF Gender Gap
+4. Implement core pipeline infrastructure
+5. Begin Phase 1 integrations
+
+---
+
+For complete implementation details, roadmap, technical architecture, and source-by-source breakdowns, see:
+📘 **[OPEN_DATA_PIPELINE_PLAN.md](OPEN_DATA_PIPELINE_PLAN.md)**
 
 ---
 

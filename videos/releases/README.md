@@ -60,22 +60,43 @@ Git LFS is configured in this repo for reference, but videos are NOT stored here
 
 ## Naming Convention
 
-- **Videos:** `v{version}.mp4` (e.g., `v2.0.0.mp4`)
-- **Thumbnails:** `v{version}-thumb.jpg` (e.g., `v2.0.0-thumb.jpg`)
+- **Release Videos:** `v{version}.mp4` (e.g., `v2.0.0.mp4`)
+- **Release Thumbnails:** `v{version}-thumb.jpg` (e.g., `v2.0.0-thumb.jpg`)
+- **Welcome Video:** `welcome.mp4` (first-launch demo video)
+- **Welcome Thumbnail:** `welcome-thumb.jpg`
 
 ## Directory Structure
 
 ```
 videos/
 └── releases/
-    ├── v2.0.0.mp4
+    ├── welcome.mp4            # First-launch demo video
+    ├── welcome-thumb.jpg      # Welcome video thumbnail
+    ├── v2.0.0.mp4            # Version update videos
     ├── v2.0.0-thumb.jpg
-    ├── v1.1.20.mp4
-    ├── v1.1.20-thumb.jpg
+    ├── v1.2.0.mp4
+    ├── v1.2.0-thumb.jpg
     └── README.md (this file)
 ```
 
 ## Usage in App
+
+### Welcome Video (First Launch)
+
+The welcome video is shown on first app launch and is hardcoded in `OnboardingWelcomeVideoView.swift`:
+
+```swift
+OnboardingWelcomeVideoView(
+    videoURL: URL(string: "https://atlaslogged.com/videos/releases/welcome.mp4"),
+    thumbnailURL: URL(string: "https://atlaslogged.com/videos/releases/welcome-thumb.jpg"),
+    onContinue: { ... }
+)
+```
+
+**Hosted on:** GitHub Pages (atlaslogged.com)
+**Purpose:** Introduce new users to the app's core features
+
+### Version Update Videos
 
 Videos are referenced in the changelog.json using **GitHub Release asset URLs**:
 
