@@ -2,189 +2,164 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Welcome to Atlas Logged - Your Personal Travel Companion">
     <title>Welcome to Atlas Logged</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/liquid-glass.css">
 
-        .container {
-            max-width: 900px;
-            width: 100%;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-        }
-
-        .header {
-            text-align: center;
-            padding: 40px 20px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.95;
-        }
-
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
-            height: 0;
-            background: #000;
-        }
-
-        .video-container video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .content {
-            padding: 40px;
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 30px;
-        }
-
-        .feature {
-            text-align: center;
-        }
-
-        .feature-icon {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-        }
-
-        .feature h3 {
-            font-size: 1.3em;
-            margin-bottom: 10px;
-            color: #333;
-        }
-
-        .feature p {
-            color: #666;
-            line-height: 1.6;
-        }
-
-        .cta {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 1px solid #eee;
-        }
-
-        .cta a {
-            display: inline-block;
-            padding: 15px 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-decoration: none;
-            border-radius: 30px;
-            font-size: 1.1em;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .cta a:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2em;
-            }
-
-            .header p {
-                font-size: 1em;
-            }
-
-            .content {
-                padding: 30px 20px;
-            }
-
-            .features {
-                grid-template-columns: 1fr;
-                gap: 25px;
-            }
-        }
-    </style>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/favicon.png">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Welcome to Atlas Logged</h1>
-            <p>Track your travels, preserve your memories, protect your privacy</p>
-        </div>
+    <!-- Skip to content link for accessibility -->
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
 
-        <div class="video-container">
-            <video controls poster="https://github.com/shinkansensupportgroup/atlas-logged-website/releases/download/welcome-video/welcome-thumb.jpg">
-                <source src="https://github.com/shinkansensupportgroup/atlas-logged-website/releases/download/welcome-video/welcome.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-        </div>
+    <!-- SVG Filters for Subtle Glass Distortion (Chromium only) -->
+    <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
+        <defs>
+            <filter id="glass-distortion" color-interpolation-filters="sRGB" x="-50%" y="-50%" width="200%" height="200%">
+                <feTurbulence
+                    type="fractalNoise"
+                    baseFrequency="0.01 0.01"
+                    numOctaves="1"
+                    seed="7"
+                    result="noise" />
+                <feGaussianBlur in="noise" stdDeviation="1.5" result="smooth" />
+                <feDisplacementMap
+                    in="SourceGraphic"
+                    in2="smooth"
+                    scale="3"
+                    xChannelSelector="R"
+                    yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
 
-        <div class="content">
-            <div class="features">
-                <div class="feature">
-                    <div class="feature-icon">📍</div>
-                    <h3>Automatic Tracking</h3>
-                    <p>Automatically log every journey with precise details</p>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <div class="nav-content">
+                <div class="nav-brand">
+                    <img src="assets/logo.png" alt="Atlas Logged" class="nav-logo">
+                    <span class="brand-name">Atlas Logged</span>
                 </div>
 
-                <div class="feature">
-                    <div class="feature-icon">📊</div>
-                    <h3>Travel Insights</h3>
-                    <p>Get insights into your travel patterns and statistics</p>
-                </div>
+                <!-- Hamburger Menu Button -->
+                <button class="hamburger" id="hamburger" aria-label="Open navigation menu" aria-expanded="false">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </button>
 
-                <div class="feature">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Your Privacy First</h3>
-                    <p>Complete control over your data with customizable privacy levels</p>
+                <!-- Navigation Links -->
+                <div class="nav-links" id="navLinks">
+                    <a href="index.html">Home</a>
+                    <a href="index.html#features">Features</a>
+                    <a href="privacy.html">Privacy</a>
+                    <a href="location-faq.html">Location FAQ</a>
+                    <a href="https://apps.apple.com/us/app/atlas-logged/id6538725214?itscg=30200&itsct=apps_box_badge&mttnsubad=6538725214" target="_blank" rel="noopener noreferrer" class="btn-primary" aria-label="Download Atlas Logged (opens in new window)">Download</a>
                 </div>
             </div>
+        </div>
+    </nav>
 
-            <div class="cta">
-                <a href="index.html">Learn More</a>
+    <!-- Main Content -->
+    <main id="main-content">
+        <!-- Hero Section with Video -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <img src="assets/logo.png" alt="Atlas Logged" class="hero-logo">
+                    <h1>Welcome to Atlas Logged</h1>
+                    <p class="tagline">Your Personal Travel Companion</p>
+                    <p class="subtitle">Track your travels, preserve your memories, protect your privacy</p>
+
+                    <!-- Video Container -->
+                    <div style="margin: 3rem 0; max-width: 800px; margin-left: auto; margin-right: auto;">
+                        <div style="position: relative; padding-bottom: 56.25%; height: 0; border-radius: 1rem; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);">
+                            <video
+                                controls
+                                poster="https://github.com/shinkansensupportgroup/atlas-logged-website/releases/download/welcome-video/welcome-thumb.jpg"
+                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+                            >
+                                <source src="https://github.com/shinkansensupportgroup/atlas-logged-website/releases/download/welcome-video/welcome.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    </div>
+
+                    <!-- App Store Badge -->
+                    <a href="https://apps.apple.com/us/app/atlas-logged/id6538725214?itscg=30200&itsct=apps_box_badge&mttnsubad=6538725214" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 2rem;" aria-label="Download Atlas Logged on the App Store (opens in new window)">
+                        <img src="assets/app-store-badge.svg" alt="Download on the App Store" style="width: 246px; height: 82px; vertical-align: middle; object-fit: contain;" loading="lazy" />
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="container">
+                <h2>What You'll Love</h2>
+
+                <div class="features-grid">
+                    <div class="feature">
+                        <div class="feature-icon" role="img" aria-label="Map icon">📍</div>
+                        <h3>Automatic Tracking</h3>
+                        <p>Automatically log every journey with precise details about where you've been</p>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon" role="img" aria-label="Chart icon">📊</div>
+                        <h3>Travel Insights</h3>
+                        <p>Get beautiful insights into your travel patterns, countries visited, and statistics</p>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon" role="img" aria-label="Lock icon">🔒</div>
+                        <h3>Your Privacy First</h3>
+                        <p>Complete control over your data with customizable privacy levels that suit your needs</p>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon" role="img" aria-label="Calendar icon">📅</div>
+                        <h3>Visual Calendar</h3>
+                        <p>See your travel history beautifully displayed in an interactive calendar view</p>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon" role="img" aria-label="Battery icon">🔋</div>
+                        <h3>Battery Efficient</h3>
+                        <p>Less than 1% battery usage per day with smart location updates</p>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon" role="img" aria-label="Cloud icon">☁️</div>
+                        <h3>Optional Sync</h3>
+                        <p>Choose to sync via iCloud. Private, encrypted, always under your control</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="location-faq.html">Location FAQ</a>
+                    <a href="index.html">Home</a>
+                </div>
+                <p class="footer-copy">&copy; 2025 Atlas Codes. All rights reserved.</p>
             </div>
         </div>
-    </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/main.js"></script>
 </body>
 </html>
